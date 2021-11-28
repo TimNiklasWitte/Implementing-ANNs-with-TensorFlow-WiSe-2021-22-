@@ -70,6 +70,10 @@ def main():
     # First subplot
     plt.subplot(121)
     plt.plot(x, test_accuracies, 'g')
+
+    # Dashed line for 0.9 Accuracy
+    plt.axhline(y=0.9, color='y', linestyle='--')
+
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
 
