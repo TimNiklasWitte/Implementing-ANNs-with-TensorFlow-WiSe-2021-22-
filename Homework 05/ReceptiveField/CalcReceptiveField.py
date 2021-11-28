@@ -45,6 +45,7 @@ def main():
 
         print(f"          Layer name: {layer_name}")
         print(f"         Kernel size: ({kernel_size}, {kernel_size})")
+        print(f"        Padding size: ({padding_size}, {padding_size})")
         print(f"         Stride size: ({stride_size}, {stride_size})")
         print()
         print(f"         Output size: ({output_size}, {output_size})")
