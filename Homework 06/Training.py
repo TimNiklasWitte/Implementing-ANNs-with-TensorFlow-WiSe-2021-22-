@@ -16,19 +16,20 @@ def main():
 
 
     #For showcasing we only use a subset of the training and test data (generally use all of the available data!)
-    train_dataset = train_dataset.take(1000)
-    test_dataset = test_dataset.take(100)
+    #train_dataset = train_dataset.take(1000)
+    #test_dataset = test_dataset.take(100)
 
     # ### Hyperparameters
     num_epochs = 10
-    learning_rate = 0.1
+    learning_rate = 0.001
 
     # Initialize the model.
     model = ResNet()
+   
     # Initialize the loss: categorical cross entropy. Check out 'tf.keras.losses'.
     cross_entropy_loss = tf.keras.losses.CategoricalCrossentropy()
     # Initialize the optimizer: SGD with default parameters. Check out 'tf.keras.optimizers'
-    optimizer = tf.keras.optimizers.SGD(learning_rate)
+    optimizer = tf.keras.optimizers.Adam(learning_rate)
 
     # Initialize lists for later visualization.
     train_losses = []
@@ -40,6 +41,7 @@ def main():
     test_loss, test_accuracy = test(model, test_dataset, cross_entropy_loss)
     test_losses.append(test_loss)
     test_accuracies.append(test_accuracy)
+    model.summary()
 
     #check how model performs on train data once before we begin
     train_loss, _ = test(model, train_dataset, cross_entropy_loss)
