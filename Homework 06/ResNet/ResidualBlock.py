@@ -12,6 +12,7 @@ class ResidualBlock(tf.keras.layers.Layer):
 
         ==> = BatchNormalization and Activation
         + = add output of 3th ConvLayer with input of 1st ConvLayer (before BatchNormalization and Activation are applied)
+        
         Args:
 
         n_filters (int) : number of filters applied in the 1st and 2nd ConvLayer

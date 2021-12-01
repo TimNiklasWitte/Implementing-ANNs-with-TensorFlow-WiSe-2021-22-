@@ -4,7 +4,9 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from ResNet import *
+from ResNet.ResNet import *
+from DenseNet.DenseNet import *
+
 from Util import *
 
 
@@ -24,7 +26,7 @@ def main():
     learning_rate = 0.001
 
     # Initialize the model.
-    model = ResNet()
+    model = DenseNet()
    
     # Initialize the loss: categorical cross entropy. Check out 'tf.keras.losses'.
     cross_entropy_loss = tf.keras.losses.CategoricalCrossentropy()

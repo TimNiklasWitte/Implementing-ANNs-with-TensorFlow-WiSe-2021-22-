@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from ResidualBlock import *
+from ResNet.ResidualBlock import *
 
 class ResNet(tf.keras.Model):
     def __init__(self):
