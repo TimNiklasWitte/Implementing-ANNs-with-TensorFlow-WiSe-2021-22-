@@ -8,7 +8,7 @@ class ResidualBlock(tf.keras.layers.Layer):
          ==> Conv2D ==> Conv2D ==> Conv2D ==> +
         |                                     |
         |_____________________________________|
-              this path is called shortcut
+              this path is called shortcut (aka skipped connection)
 
         ==> = BatchNormalization and Activation
         + = add output of 3th ConvLayer with input of 1st ConvLayer (before BatchNormalization and Activation are applied)
@@ -76,12 +76,6 @@ class ResidualBlock(tf.keras.layers.Layer):
             tf.keras.layers.Conv2D(filters=out_filters, kernel_size =(1,1))
         ]
 
-
-    
-    #def build(self, n_filters=64, out_filters=256):
-        
-        
-
         
     #@tf.function 
     def call(self, x, train):
@@ -95,10 +89,10 @@ class ResidualBlock(tf.keras.layers.Layer):
             self.out_filters = input.shape[-1]
             input = self.shortcut(input)
 
-        # propagte towards all layers
+        # Propagte input towards all layers
         for layer in self.layer_list:
             
-            # No BatchNormalization during training
+            # No BatchNormalization during testing
             if not train:
                 if isinstance(layer, tf.keras.layers.BatchNormalization):
                     continue

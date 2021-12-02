@@ -9,12 +9,17 @@ class DenseNet(tf.keras.Model):
 
         self.layer_list = [
             # Initial Conv layer before the first res block
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding="same", activation="relu"),
+            tf.keras.layers.Conv2D(filters=30, kernel_size=3, padding="same", activation="relu"),
 
-            DenseBlock(n_filters=128, new_channels=32),
-            DenseBlock(n_filters=256, new_channels=64),
-            DenseBlock(n_filters=128, new_channels=32),
+            DenseBlock(n_filters=80, new_channels=60),
+            TransitionLayer(n_filters=50),
+            
+            DenseBlock(n_filters=100, new_channels=80),
+            TransitionLayer(n_filters=60),
 
+            DenseBlock(n_filters=120, new_channels=100),
+
+   
             tf.keras.layers.GlobalAveragePooling2D(),
 
             tf.keras.layers.Dense(10, activation=tf.nn.softmax) 
@@ -25,7 +30,7 @@ class DenseNet(tf.keras.Model):
 
         for layer in self.layer_list:
 
-            if isinstance(layer, DenseBlock):
+            if isinstance(layer, DenseBlock) or isinstance(layer, TransitionLayer):
                 x = layer(x, train)
             else:
                 x = layer(x)

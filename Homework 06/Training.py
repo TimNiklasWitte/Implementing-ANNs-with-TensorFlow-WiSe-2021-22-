@@ -26,7 +26,7 @@ def main():
     learning_rate = 0.001
 
     # Initialize the model.
-    model = DenseNet()
+    model = ResNet()
    
     # Initialize the loss: categorical cross entropy. Check out 'tf.keras.losses'.
     cross_entropy_loss = tf.keras.losses.CategoricalCrossentropy()

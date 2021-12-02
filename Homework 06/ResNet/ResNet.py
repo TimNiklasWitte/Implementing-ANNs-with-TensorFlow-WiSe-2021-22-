@@ -9,16 +9,24 @@ class ResNet(tf.keras.Model):
         self.layer_list = [
             tf.keras.layers.Conv2D(filters=32, kernel_size=(5,5), strides=(1,1), activation="relu", padding='valid'),
             
-            ResidualBlock(n_filters=40, out_filters=64, mode="normal"),
-            ResidualBlock(n_filters=128, out_filters=150, mode="normal"),
+            # Change number of channels
+            ResidualBlock(n_filters=64, out_filters=128, mode="normal"),
 
-            ResidualBlock(n_filters=100, out_filters=150, mode="strided"),
-            ResidualBlock(n_filters=100, out_filters=150, mode="strided"),
-            ResidualBlock(n_filters=100, out_filters=150, mode="strided"),
+            # Shrinks feature maps, changes n of channels 
+            ResidualBlock(n_filters=64, out_filters=128, mode="strided"),
 
-            ResidualBlock(n_filters=200, out_filters=250, mode="normal"),
+            # Keeps feature map size and n of channels
+            ResidualBlock(n_filters=128, out_filters=128, mode="constant"),
 
-            ResidualBlock(n_filters=250, out_filters=250, mode="constant"),
+            # Change number of channels
+            ResidualBlock(n_filters=128, out_filters=256, mode="normal"),
+
+            # Shrinks feature maps, changes n of channels 
+            ResidualBlock(n_filters=128, out_filters=256, mode="strided"),
+
+            # Keeps feature map size and n of channels
+            ResidualBlock(n_filters=256, out_filters=256, mode="constant"),
+
             tf.keras.layers.GlobalAveragePooling2D(),
 
             tf.keras.layers.Dense(10, activation=tf.nn.softmax)
