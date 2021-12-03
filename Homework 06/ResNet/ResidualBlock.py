@@ -92,11 +92,12 @@ class ResidualBlock(tf.keras.layers.Layer):
         # Propagte input towards all layers
         for layer in self.layer_list:
             
-            # No BatchNormalization during testing
-            if not train:
-                if isinstance(layer, tf.keras.layers.BatchNormalization):
-                    continue
+            # Replay train parameter to BatchNormalization layers during call
+            if isinstance(layer, tf.keras.layers.BatchNormalization):
+                x = layer(x, training=train)
+            else:
+                x = layer(x)
 
-            x = layer(x)
+       
         
         return tf.keras.layers.Add()([x, input])  

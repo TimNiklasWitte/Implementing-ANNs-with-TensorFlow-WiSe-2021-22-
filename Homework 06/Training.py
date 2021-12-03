@@ -22,7 +22,7 @@ def main():
     #test_dataset = test_dataset.take(100)
 
     # ### Hyperparameters
-    num_epochs = 10
+    num_epochs = 30
     learning_rate = 0.001
 
     # Initialize the model.

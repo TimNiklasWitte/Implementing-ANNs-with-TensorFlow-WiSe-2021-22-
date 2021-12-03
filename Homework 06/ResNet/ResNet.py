@@ -7,25 +7,21 @@ class ResNet(tf.keras.Model):
         super(ResNet, self).__init__()
 
         self.layer_list = [
-            tf.keras.layers.Conv2D(filters=32, kernel_size=(5,5), strides=(1,1), activation="relu", padding='valid'),
+            tf.keras.layers.Conv2D(filters=55, kernel_size=(3,3), strides=(1,1), padding='valid'),
             
-            # Change number of channels
-            ResidualBlock(n_filters=64, out_filters=128, mode="normal"),
+            ResidualBlock(n_filters=60, out_filters=65, mode="normal"),
+            ResidualBlock(n_filters=70, out_filters=65, mode="strided"),
 
-            # Shrinks feature maps, changes n of channels 
-            ResidualBlock(n_filters=64, out_filters=128, mode="strided"),
+            ResidualBlock(n_filters=70, out_filters=75, mode="normal"),
+            ResidualBlock(n_filters=80, out_filters=75, mode="strided"),
+            
+            ResidualBlock(n_filters=80, out_filters=85, mode="normal"),
+            ResidualBlock(n_filters=90, out_filters=85, mode="strided"), # <- remove?
 
-            # Keeps feature map size and n of channels
-            ResidualBlock(n_filters=128, out_filters=128, mode="constant"),
+            #ResidualBlock(n_filters=45, out_filters=50, mode="normal"),
+            #ResidualBlock(n_filters=55, out_filters=50, mode="strided"),
 
-            # Change number of channels
-            ResidualBlock(n_filters=128, out_filters=256, mode="normal"),
-
-            # Shrinks feature maps, changes n of channels 
-            ResidualBlock(n_filters=128, out_filters=256, mode="strided"),
-
-            # Keeps feature map size and n of channels
-            ResidualBlock(n_filters=256, out_filters=256, mode="constant"),
+            #ResidualBlock(n_filters=50, out_filters=50, mode="constant"),
 
             tf.keras.layers.GlobalAveragePooling2D(),
 
