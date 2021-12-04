@@ -3,7 +3,19 @@ import tensorflow as tf
 class DenseBlock(tf.keras.layers.Layer):
 
     def __init__(self, n_filters, new_channels):
-        
+        """
+        -> Conv2D -> Conv2D
+
+        -> BatchNormalization and Activation
+
+        First Conv2D shall increase the number of filters
+        Second Conv2D decrease the number of filters
+        Overall, the number of filters shall be increased
+
+        Args:
+            n_filters Number of filters used in the 1st Conv2D
+            new_channels Number of filters used in the 2nd Conv2D
+        """
         super(DenseBlock, self).__init__()
 
         self.layer_list = [
@@ -23,9 +35,17 @@ class DenseBlock(tf.keras.layers.Layer):
     @tf.function
     def call(self, x, train):
         
+        """
+        Propagate the input towards all layers
+
+        Args:
+            x input
+            train flag set if we train
+        """
+
         input = x
 
-        # propagte towards all layers
+        # Propagte towards all layers
         for layer in self.layer_list:
             
             # Replay train parameter to BatchNormalization layers during call

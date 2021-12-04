@@ -6,30 +6,51 @@ from DenseNet.TransitionLayer import *
 
 
 class DenseNet(tf.keras.Model):
+
+    """
+    General idea of the DenseNet structure:
+
+    (1) Initial Conv layer before the first DenseBlock -> Fixed amount of filters
+
+    (2,3,4) Alternate usage of DenseBlock (increase feature maps) and TransitionLayer (decrease number and size of feature maps) aka Bottleneck
+    
+    (5) Pooling -> "Convert" The 100 Filters (matrices) into 100 values "compress the information"
+
+    (6) Softmax -> Classification
+    """
+
     def __init__(self):
         super(DenseNet, self).__init__()
 
         self.layer_list = [
-            # Initial Conv layer before the first DenseBlock
+            # (1)
             tf.keras.layers.Conv2D(filters=55, kernel_size=(3,3), strides=(1,1), padding='valid'),
-
+            # (2)
             DenseBlock(n_filters=100, new_channels=75),
             TransitionLayer(n_filters=60),
-
+            # (3)
             DenseBlock(n_filters=120, new_channels=100),
             TransitionLayer(n_filters=75),
-            
+            # (4)
             DenseBlock(n_filters=150, new_channels=120),
             TransitionLayer(n_filters=100),
-
-   
+            # (5)
             tf.keras.layers.GlobalAveragePooling2D(),
-
+            # (6)
             tf.keras.layers.Dense(10, activation=tf.nn.softmax) 
         ]
 
     @tf.function
     def call(self, inputs, train):
+
+        """
+        Propagate the input towards all layers
+
+        Args:
+            x input
+            train flag set if we train
+        """
+
         x = inputs
 
         for layer in self.layer_list:

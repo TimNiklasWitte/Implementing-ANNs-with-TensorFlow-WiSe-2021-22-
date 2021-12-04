@@ -29,11 +29,11 @@ def main():
     # Initialize the optimizer: SGD with default parameters. Check out 'tf.keras.optimizers'
     optimizer = tf.keras.optimizers.Adam(learning_rate)
     
-     # Plot labels
-    models = [ResNet(), DenseNet()]
+     # Labels for the model
     model_names = ["ResNet", "DenseNet"]
-    
-    # Plot init
+    models = [ResNet(), DenseNet()]
+
+    # Init plot
     rows = len(model_names)
     cols = 2
     fig, axs = plt.subplots(rows, cols)
