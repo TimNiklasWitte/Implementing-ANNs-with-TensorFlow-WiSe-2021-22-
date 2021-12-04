@@ -77,7 +77,7 @@ class ResidualBlock(tf.keras.layers.Layer):
         ]
 
         
-    #@tf.function 
+    @tf.function 
     def call(self, x, train):
         
         input = x

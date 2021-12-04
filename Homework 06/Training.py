@@ -21,7 +21,7 @@ def main():
     #test_dataset = test_dataset.take(100)
 
     # ### Hyperparameters
-    num_epochs = 10
+    num_epochs = 15
     learning_rate = 0.001
 
     # Initialize the loss: categorical cross entropy. Check out 'tf.keras.losses'.
