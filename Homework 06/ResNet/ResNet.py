@@ -4,29 +4,54 @@ import numpy as np
 from ResNet.ResidualBlock import *
 
 class ResNet(tf.keras.Model):
+
+    """
+    General idea of the ResNet structure:
+
+    (1) Initial Conv layer before the first DenseBlock -> Fixed amount of filters
+
+    (2,3,4) Alternate usage of ResidualBlocks with mode="normal" and mode="strided"
+            mode="normal"  -> Increase number of channels
+            mode="strided" -> Decrease size of feature maps (= channels)
+    
+    (5) Pooling -> "Convert" The 85 Filters (matrices) into 85 values "compress the information"
+
+    (6) Softmax -> Classification
+    """
+
     def __init__(self):
         super(ResNet, self).__init__()
 
         self.layer_list = [
+
+            # (1)
             tf.keras.layers.Conv2D(filters=55, kernel_size=(3,3), strides=(1,1), padding='valid'),
-            
+            # (2)
             ResidualBlock(n_filters=60, out_filters=65, mode="normal"),
             ResidualBlock(n_filters=70, out_filters=65, mode="strided"),
-
+            # (3)
             ResidualBlock(n_filters=70, out_filters=75, mode="normal"),
             ResidualBlock(n_filters=80, out_filters=75, mode="strided"),
-            
+            # (4)
             ResidualBlock(n_filters=80, out_filters=85, mode="normal"),
             ResidualBlock(n_filters=90, out_filters=85, mode="strided"), 
-
+            # (5)
             tf.keras.layers.GlobalAveragePooling2D(),
-
+            # (6)
             tf.keras.layers.Dense(10, activation=tf.nn.softmax)
         ]
         
     @tf.function
     def call(self, inputs, train):
         
+        """
+        Propagate the input towards all layers
+
+        Args:
+            x input
+            train flag set if we train
+        """
+
         x = inputs
 
         for layer in self.layer_list:

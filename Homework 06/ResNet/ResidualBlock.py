@@ -80,6 +80,14 @@ class ResidualBlock(tf.keras.layers.Layer):
     @tf.function 
     def call(self, x, train):
         
+        """
+        Propagate the input towards all layers
+
+        Args:
+            x input
+            train flag set if we train
+        """
+
         input = x
 
         if self.mode == "normal":
@@ -98,6 +106,4 @@ class ResidualBlock(tf.keras.layers.Layer):
             else:
                 x = layer(x)
 
-       
-        
         return tf.keras.layers.Add()([x, input])  
