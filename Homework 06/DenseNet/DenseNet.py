@@ -41,7 +41,7 @@ class DenseNet(tf.keras.Model):
         ]
 
     @tf.function
-    def call(self, inputs, train):
+    def call(self, inputs: tf.Tensor, train: bool) -> tf.Tensor:
 
         """
         Propagate the input towards all layers
@@ -63,7 +63,7 @@ class DenseNet(tf.keras.Model):
         return x
 
     @tf.function 
-    def train_step(self, input, target, loss_function, optimizer):
+    def train_step(self, input: tf.Tensor, target: tf.Tensor, loss_function, optimizer) -> float:
         # loss_object and optimizer_object are instances of respective tensorflow classes
         with tf.GradientTape() as tape:
             prediction = self(input, True)
@@ -73,7 +73,7 @@ class DenseNet(tf.keras.Model):
         return loss
 
     # @tf.function # <-- error?
-    def test(self, test_data, loss_function):
+    def test(self, test_data: tf.data.Dataset, loss_function) -> (float, float):
         # test over complete test data
 
         test_accuracy_aggregator = []

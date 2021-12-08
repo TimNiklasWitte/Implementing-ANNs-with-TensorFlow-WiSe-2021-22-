@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 class ResidualBlock(tf.keras.layers.Layer):
 
     def __init__(self, n_filters=64, out_filters=256, mode="normal"):
@@ -39,47 +40,46 @@ class ResidualBlock(tf.keras.layers.Layer):
 
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Activation(tf.nn.relu),
-            tf.keras.layers.Conv2D(filters=n_filters, kernel_size =(1,1)),
-            
+            tf.keras.layers.Conv2D(filters=n_filters, kernel_size=(1, 1)),
+
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Activation(tf.nn.relu)
-            
+
         ]
 
         if self.mode == "normal":
 
             self.layer_list += [
-                tf.keras.layers.Conv2D(filters=n_filters, kernel_size =(3,3), padding="same"),
+                tf.keras.layers.Conv2D(filters=n_filters, kernel_size=(3, 3), padding="same"),
             ]
 
-            self.shortcut = tf.keras.layers.Conv2D(filters=self.out_filters, kernel_size=(1,1))
+            self.shortcut = tf.keras.layers.Conv2D(filters=self.out_filters, kernel_size=(1, 1))
 
         elif self.mode == "strided":
 
-            #self.out_filters = 
+            # self.out_filters =
 
             self.layer_list += [
-                tf.keras.layers.Conv2D(filters=n_filters, kernel_size =(3,3), padding="same", strides=(2,2))
+                tf.keras.layers.Conv2D(filters=n_filters, kernel_size=(3, 3), padding="same", strides=(2, 2))
             ]
-            
-            self.shortcut = tf.keras.layers.MaxPool2D(pool_size=(1,1), strides=(2,2))
+
+            self.shortcut = tf.keras.layers.MaxPool2D(pool_size=(1, 1), strides=(2, 2))
 
         elif mode == "constant":
 
             self.layer_list += [
-                tf.keras.layers.Conv2D(filters=n_filters, kernel_size =(3,3), padding="same")
+                tf.keras.layers.Conv2D(filters=n_filters, kernel_size=(3, 3), padding="same")
             ]
 
         self.layer_list += [
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.Activation(tf.nn.relu),
-            tf.keras.layers.Conv2D(filters=out_filters, kernel_size =(1,1))
+            tf.keras.layers.Conv2D(filters=out_filters, kernel_size=(1, 1))
         ]
 
-        
-    @tf.function 
-    def call(self, x, train):
-        
+    @tf.function
+    def call(self, x: tf.Tensor, train: bool) -> tf.Tensor:
+
         """
         Propagate the input towards all layers
 
@@ -93,17 +93,17 @@ class ResidualBlock(tf.keras.layers.Layer):
         if self.mode == "normal":
             input = self.shortcut(input)
 
-        elif self.mode == "strided": 
+        elif self.mode == "strided":
             self.out_filters = input.shape[-1]
             input = self.shortcut(input)
 
         # Propagte input towards all layers
         for layer in self.layer_list:
-            
+
             # Replay train parameter to BatchNormalization layers during call
             if isinstance(layer, tf.keras.layers.BatchNormalization):
                 x = layer(x, training=train)
             else:
                 x = layer(x)
 
-        return tf.keras.layers.Add()([x, input])  
+        return tf.keras.layers.Add()([x, input])

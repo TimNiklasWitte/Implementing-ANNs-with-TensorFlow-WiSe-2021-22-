@@ -3,8 +3,8 @@ import numpy as np
 
 from ResNet.ResidualBlock import *
 
-class ResNet(tf.keras.Model):
 
+class ResNet(tf.keras.Model):
     """
     General idea of the ResNet structure:
 
@@ -25,7 +25,7 @@ class ResNet(tf.keras.Model):
         self.layer_list = [
 
             # (1)
-            tf.keras.layers.Conv2D(filters=55, kernel_size=(3,3), strides=(1,1), padding='valid'),
+            tf.keras.layers.Conv2D(filters=55, kernel_size=(3, 3), strides=(1, 1), padding='valid'),
             # (2)
             ResidualBlock(n_filters=60, out_filters=65, mode="normal"),
             ResidualBlock(n_filters=70, out_filters=65, mode="strided"),
@@ -34,16 +34,16 @@ class ResNet(tf.keras.Model):
             ResidualBlock(n_filters=80, out_filters=75, mode="strided"),
             # (4)
             ResidualBlock(n_filters=80, out_filters=85, mode="normal"),
-            ResidualBlock(n_filters=90, out_filters=85, mode="strided"), 
+            ResidualBlock(n_filters=90, out_filters=85, mode="strided"),
             # (5)
             tf.keras.layers.GlobalAveragePooling2D(),
             # (6)
             tf.keras.layers.Dense(10, activation=tf.nn.softmax)
         ]
-        
+
     @tf.function
-    def call(self, inputs, train):
-        
+    def call(self, inputs: tf.Tensor, train: bool):
+
         """
         Propagate the input towards all layers
 
@@ -60,12 +60,11 @@ class ResNet(tf.keras.Model):
                 x = layer(x, train)
             else:
                 x = layer(x)
-        
+
         return x
 
-    
-    @tf.function 
-    def train_step(self, input, target, loss_function, optimizer):
+    @tf.function
+    def train_step(self, input: tf.Tensor, target: tf.TensorSpec, loss_function, optimizer) -> float:
         # loss_object and optimizer_object are instances of respective tensorflow classes
         with tf.GradientTape() as tape:
             prediction = self(input, True)
@@ -75,17 +74,16 @@ class ResNet(tf.keras.Model):
         return loss
 
     # @tf.function # <-- error?
-    def test(self, test_data, loss_function):
+    def test(self, test_data: tf.data.Dataset, loss_function) -> (float, float):
         # test over complete test data
 
         test_accuracy_aggregator = []
         test_loss_aggregator = []
 
         for (input, target) in test_data:
-                
             prediction = self(input, False)
             sample_test_loss = loss_function(target, prediction)
-            sample_test_accuracy =  np.argmax(target, axis=1) == np.argmax(prediction, axis=1)
+            sample_test_accuracy = np.argmax(target, axis=1) == np.argmax(prediction, axis=1)
             sample_test_accuracy = np.mean(sample_test_accuracy)
             test_loss_aggregator.append(sample_test_loss.numpy())
             test_accuracy_aggregator.append(np.mean(sample_test_accuracy))
@@ -94,5 +92,3 @@ class ResNet(tf.keras.Model):
         test_accuracy = tf.reduce_mean(test_accuracy_aggregator)
 
         return test_loss, test_accuracy
-
-    
