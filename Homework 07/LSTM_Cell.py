@@ -4,7 +4,8 @@ class LSTM_Cell:
 
     # units = hidden size = size of hidden state vector #= The length of the resulting vector (similar to the units argument in Dense layers)
     # 
-    def __init__(self,units):
+    def __init__(self, units):
+        self.units = units
 
         # Forget Gate
         self.dense_layer_forget = tf.keras.layers.Dense(units, activation="sigmoid", bias_initializer=tf.keras.initializers.Ones())
@@ -20,10 +21,10 @@ class LSTM_Cell:
         
 
     def call(self, x, states):
+        
+        hidden_state, cell_state = states
 
-        cell_state, hidden_state = states
-
-        concated = tf.concat((states, x), axis= 1)
+        concated = tf.concat((hidden_state, x), axis= 1)
 
         # 1. Preparing
 
@@ -47,6 +48,4 @@ class LSTM_Cell:
         regularized_cell_state = tf.math.tanh(cell_state)
         hidden_state = tf.math.multiply(o_t, regularized_cell_state)
 
-        print(concated)
-
-        return cell_state, hidden_state
+        return hidden_state, cell_state 

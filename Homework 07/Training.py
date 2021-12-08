@@ -1,13 +1,31 @@
 import numpy as np
 import tensorflow as tf
 
-from LSTM_Cell import *
+from MyModel import *
 
-seq_len = 10
+seq_len = 5
 num_samples = 100
 
 RANGE_MAX = 2
 RANGE_MIN = -RANGE_MAX
+
+
+def main():
+ 
+    dataset = tf.data.Dataset.from_generator(my_integration_task, (tf.float32, tf.uint8))# , output_signature=tf.TensorSpec(shape,dtype))
+    
+    dataset = dataset.apply(prepare_data)
+ 
+    # train_dataset = dataset.take(1350)
+    # test_dataset = dataset.take(180)
+    model = MyModel()
+
+    train_dataset = dataset.take(1)
+    for elem in train_dataset:
+        data, target = elem 
+        print(data)
+        print(model(data))
+
 
 def prepare_data(data):
 
@@ -16,23 +34,10 @@ def prepare_data(data):
 
     #shuffle, batch, prefetch
     data = data.shuffle(1350)
-    data = data.batch(32)
+    data = data.batch(1)
     data = data.prefetch(20)
     #return preprocessed dataset
     return data
-
-def main():
-
-    # dataset = tf.data.Dataset.from_generator(my_integration_task, (tf.float32, tf.uint8))# , output_signature=tf.TensorSpec(shape,dtype))
-    
-    # dataset = dataset.apply(prepare_data)
- 
-    # train_dataset = dataset.take(1350)
-    # test_dataset = dataset.take(180)
-
-    # train_dataset = dataset.take(1)
-    # for elem in train_dataset:
-    #     print(elem)
 
 
 def integration_task(seq_len, num_samples):
