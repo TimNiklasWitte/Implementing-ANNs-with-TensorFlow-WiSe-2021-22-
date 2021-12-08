@@ -19,7 +19,7 @@ class LSTM_Cell:
         # Output Gate
         self.dense_layer_output = tf.keras.layers.Dense(units, activation="sigmoid")
         
-
+    @tf.function
     def call(self, x, states):
         
         hidden_state, cell_state = states
