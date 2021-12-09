@@ -2,9 +2,10 @@ from LSTM_Cell import *
 
 import numpy as np
 
-class LSTM_Layer:
+class LSTM_Layer(tf.keras.layers.Layer): # extends layers
 
     def __init__(self, cell):
+        super(LSTM_Layer, self).__init__()
         self.cell = cell
     
     @tf.function

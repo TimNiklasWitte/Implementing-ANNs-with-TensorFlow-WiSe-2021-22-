@@ -3,7 +3,6 @@ import tensorflow as tf
 class LSTM_Cell:
 
     # units = hidden size = size of hidden state vector #= The length of the resulting vector (similar to the units argument in Dense layers)
-    # 
     def __init__(self, units):
         self.units = units
 

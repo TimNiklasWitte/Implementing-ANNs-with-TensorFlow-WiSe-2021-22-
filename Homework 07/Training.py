@@ -16,8 +16,8 @@ def main():
     
     dataset = dataset.apply(prepare_data)
  
-    train_dataset = dataset.take(30)
-    test_dataset = dataset.take(50)
+    train_dataset = dataset.take(100000)
+    test_dataset = dataset.take(5000)
 
     # for elm in dataset.take(1):
     #     x, target = elm
@@ -34,8 +34,8 @@ def main():
     # exit()
 
     ### Hyperparameters
-    num_epochs = 20
-    learning_rate = 0.1
+    num_epochs = 100
+    learning_rate = 0.001
 
     # Initialize the model.
     model = MyModel()
@@ -73,6 +73,8 @@ def main():
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Accuracy")
 
+    ax.axhline(y=0.8, color='y', linestyle='--')
+
     ax1 = fig.add_subplot(122)
     ax1.set_xlim([0, num_epochs])
     ax1.set_ylim([0, 1])
@@ -99,10 +101,15 @@ def main():
         ax1.plot(x, train_losses, 'r', label="Train")
         ax1.plot(x, test_losses, 'b', label= "Test")
 
+        if len(x) == 1:
+            ax1.legend(loc="upper right")    
+
         fig.tight_layout()
         fig.canvas.draw()
-        fig.show()
+        #fig.show()
         plt.pause(0.05)
+        plt.savefig(f"./Plots/epoch {epoch}.png")
+
 
 
         # #track training loss
@@ -149,7 +156,7 @@ def prepare_data(data):
 
     #shuffle, batch, prefetch
     data = data.shuffle(100)
-    data = data.batch(16)
+    data = data.batch(32)
     data = data.prefetch(20)
     #return preprocessed dataset
     return data
