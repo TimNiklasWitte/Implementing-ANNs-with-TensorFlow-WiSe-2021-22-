@@ -11,10 +11,9 @@ class MyModel(tf.keras.Model):
         super(MyModel, self).__init__()
 
         self.layer_list = [
-            LSTM_Layer(LSTM_Cell(75)),
+            LSTM_Layer(LSTM_Cell(200)),
+            LSTM_Layer(LSTM_Cell(100)),
             LSTM_Layer(LSTM_Cell(50)),
-            LSTM_Layer(LSTM_Cell(25)),
-         
             tf.keras.layers.Dense(1, activation="sigmoid")
         ]
 
@@ -32,6 +31,7 @@ class MyModel(tf.keras.Model):
 
             else:
                 
+                # Interface between LSTM_Layer and DenseLayer
                 if not denseBlock:
                     x = x[:,-1,:] # look only at output size
 

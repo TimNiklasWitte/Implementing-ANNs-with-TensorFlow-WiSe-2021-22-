@@ -16,8 +16,8 @@ def main():
     
     dataset = dataset.apply(prepare_data)
  
-    train_dataset = dataset.take(3000)
-    test_dataset = dataset.take(500)
+    train_dataset = dataset.take(30)
+    test_dataset = dataset.take(50)
 
     # for elm in dataset.take(1):
     #     x, target = elm
@@ -61,7 +61,27 @@ def main():
     #check how model performs on train data once before we begin
     train_loss, _ = test(model, train_dataset, cross_entropy_loss)
     train_losses.append(train_loss)
+    
 
+    fig = plt.figure()
+    fig.suptitle("Accuracy and loss for training and test data")
+
+    ax = fig.add_subplot(121)
+    ax.set_xlim([0, num_epochs])
+    ax.set_ylim([0, 1])
+
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Accuracy")
+
+    ax1 = fig.add_subplot(122)
+    ax1.set_xlim([0, num_epochs])
+    ax1.set_ylim([0, 1])
+    #ax1.legend(loc="upper right")
+
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Loss")
+
+    x = []
     # We train for num_epochs epochs.
     for epoch in range(num_epochs):
         print(f'Epoch: {str(epoch)} starting with accuracy {test_accuracies[-1]}')
@@ -72,38 +92,50 @@ def main():
             train_loss = train_step(model, input, target, cross_entropy_loss, optimizer)
             epoch_loss_agg.append(train_loss)
 
-        #track training loss
+        x.append(epoch)
+     
+        ax.plot(x, test_accuracies, color='g')
+        
+        ax1.plot(x, train_losses, 'r', label="Train")
+        ax1.plot(x, test_losses, 'b', label= "Test")
+
+        fig.tight_layout()
+        fig.canvas.draw()
+        fig.show()
+        plt.pause(0.05)
+
+
+        # #track training loss
         train_losses.append(tf.reduce_mean(epoch_loss_agg))
 
-        #testing, so we can track accuracy and test loss
+        # testing, so we can track accuracy and test loss
         test_loss, test_accuracy = test(model, test_dataset, cross_entropy_loss)
         test_losses.append(test_loss)
         test_accuracies.append(test_accuracy)
 
-     # Plot results
-    plt.suptitle("Accuracy and loss for training and test data")
-    x = np.arange(0, len(train_losses))
 
-    # First subplot
-    plt.subplot(121)
-    plt.plot(x, test_accuracies, 'g')
+    #x = np.arange(0, len(train_losses))
 
-    # Dashed line for 0.8 Accuracy
-    plt.axhline(y=0.8, color='y', linestyle='--')
+    # # First subplot
+    # plt.subplot(121)
+    # plt.plot(x, test_accuracies, 'g')
 
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy")
+    # # Dashed line for 0.8 Accuracy
+    # plt.axhline(y=0.8, color='y', linestyle='--')
 
-    # Second subplot
-    plt.subplot(122)
-    plt.plot(x, train_losses, 'r', label="Train")
-    plt.plot(x, test_losses, 'b', label= "Test")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend(loc="upper right")
+    # plt.xlabel("Epoch")
+    # plt.ylabel("Accuracy")
 
-    # Format
-    plt.tight_layout()
+    # # Second subplot
+    # plt.subplot(122)
+    # plt.plot(x, train_losses, 'r', label="Train")
+    # plt.plot(x, test_losses, 'b', label= "Test")
+    # plt.xlabel("Epoch")
+    # plt.ylabel("Loss")
+    # plt.legend(loc="upper right")
+
+    # # Format
+    # plt.tight_layout()
 
     # Save and display
     plt.savefig("result.png")
