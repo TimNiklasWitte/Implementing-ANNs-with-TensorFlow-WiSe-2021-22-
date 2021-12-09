@@ -16,12 +16,12 @@ def main():
     
     dataset = dataset.apply(prepare_data)
  
-    train_dataset = dataset.take(100000)
-    test_dataset = dataset.take(5000)
+    train_dataset = dataset.take(10000)
+    test_dataset = dataset.take(1000)
 
     ### Hyperparameters
-    num_epochs = 15
-    learning_rate = 0.01
+    num_epochs = 10
+    learning_rate = 0.001
 
     # Initialize the model.
     model = MyModel()
@@ -142,7 +142,7 @@ def prepare_data(data):
 
     #shuffle, batch, prefetch
     data = data.shuffle(100)
-    data = data.batch(32)
+    data = data.batch(1) # <-- high batch size decreases accuracy
     data = data.prefetch(20)
     #return preprocessed dataset
     return data

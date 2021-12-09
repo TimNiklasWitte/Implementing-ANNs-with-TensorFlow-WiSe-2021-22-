@@ -1,9 +1,10 @@
 import tensorflow as tf
 
-class LSTM_Cell:
+class LSTM_Cell(tf.keras.layers.Layer): # <-- Needed to make parameters trainable and to be callable
 
     # units = hidden size = size of hidden state vector #= The length of the resulting vector (similar to the units argument in Dense layers)
     def __init__(self, units):
+        super(LSTM_Cell, self).__init__()
         self.units = units
 
         # Forget Gate

@@ -11,18 +11,14 @@ class MyModel(tf.keras.Model):
         super(MyModel, self).__init__()
 
         self.layer_list = [
-            tf.keras.layers.Dense(100, activation="tanh"),
-            tf.keras.layers.Dense(75, activation="tanh"),
+            tf.keras.layers.Dense(32, activation="sigmoid"),
+            tf.keras.layers.Dense(16, activation="sigmoid"),
+            LSTM_Layer(LSTM_Cell(10)),
+        
 
-            LSTM_Layer(LSTM_Cell(50)),
-         
             tf.keras.layers.Dense(1, activation="sigmoid")
         ]
-        # self.l1 = tf.keras.layers.Dense(64, activation="tanh") # batch size, seq, 64
-        # self.l1_2 = tf.keras.layers.Dense(32, activation="tanh")
-        # self.l2 = LSTM_Layer(LSTM_Cell(25)) # batch size, seq, 20
-        # self.l3 = tf.keras.layers.Dense(1, activation="sigmoid") # batch size, seq, 1
-
+      
     @tf.function
     def call(self, x):
         batchSize = x.shape[0]

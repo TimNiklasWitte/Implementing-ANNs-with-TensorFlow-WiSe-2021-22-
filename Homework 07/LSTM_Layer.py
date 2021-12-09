@@ -2,7 +2,7 @@ from LSTM_Cell import *
 
 import numpy as np
 
-class LSTM_Layer(tf.keras.layers.Layer): # extends layers
+class LSTM_Layer(tf.keras.layers.Layer): # <-- Needed to make parameters trainable and to be callable
 
     def __init__(self, cell):
         super(LSTM_Layer, self).__init__()
