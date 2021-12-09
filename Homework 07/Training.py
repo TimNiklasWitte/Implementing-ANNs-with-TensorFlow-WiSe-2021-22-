@@ -19,23 +19,9 @@ def main():
     train_dataset = dataset.take(100000)
     test_dataset = dataset.take(5000)
 
-    # for elm in dataset.take(1):
-    #     x, target = elm
-    #     layer = LSTM_Layer(LSTM_Cell(5))
-        
-    #     batchSize = x.shape[0]
-    #     states = layer.zero_states(batchSize)
-      
-     
-    #     x = layer.call(x, states)[:,-1,:]
-    #     print(x)
-    #     print("-----")
-    #     #print(x[:,-1,:])
-    # exit()
-
     ### Hyperparameters
-    num_epochs = 100
-    learning_rate = 0.001
+    num_epochs = 15
+    learning_rate = 0.01
 
     # Initialize the model.
     model = MyModel()
@@ -43,7 +29,6 @@ def main():
     # Initialize the loss: categorical cross entropy. Check out 'tf.keras.losses'.
     cross_entropy_loss = tf.keras.losses.BinaryCrossentropy()
  
-
     # Initialize the optimizer: 
     optimizer = tf.keras.optimizers.Adam(learning_rate)
 
@@ -62,6 +47,7 @@ def main():
     train_loss, _ = test(model, train_dataset, cross_entropy_loss)
     train_losses.append(train_loss)
     
+    model.summary()
 
     fig = plt.figure()
     fig.suptitle("Accuracy and loss for training and test data")
@@ -94,21 +80,21 @@ def main():
             train_loss = train_step(model, input, target, cross_entropy_loss, optimizer)
             epoch_loss_agg.append(train_loss)
 
-        x.append(epoch)
+        # x.append(epoch)
      
-        ax.plot(x, test_accuracies, color='g')
+        # ax.plot(x, test_accuracies, color='g')
         
-        ax1.plot(x, train_losses, 'r', label="Train")
-        ax1.plot(x, test_losses, 'b', label= "Test")
+        # ax1.plot(x, train_losses, 'r', label="Train")
+        # ax1.plot(x, test_losses, 'b', label= "Test")
 
-        if len(x) == 1:
-            ax1.legend(loc="upper right")    
+        # if len(x) == 1:
+        #     ax1.legend(loc="upper right")    
 
-        fig.tight_layout()
-        fig.canvas.draw()
-        #fig.show()
-        plt.pause(0.05)
-        plt.savefig(f"./Plots/epoch {epoch}.png")
+        # fig.tight_layout()
+        # fig.canvas.draw()
+        # #fig.show()
+        # plt.pause(0.05)
+        # fig.savefig(f"./Plots/epoch {epoch}.png")
 
 
 
@@ -121,28 +107,28 @@ def main():
         test_accuracies.append(test_accuracy)
 
 
-    #x = np.arange(0, len(train_losses))
+    x = np.arange(0, len(train_losses))
 
-    # # First subplot
-    # plt.subplot(121)
-    # plt.plot(x, test_accuracies, 'g')
+    # First subplot
+    plt.subplot(121)
+    plt.plot(x, test_accuracies, 'g')
 
-    # # Dashed line for 0.8 Accuracy
-    # plt.axhline(y=0.8, color='y', linestyle='--')
+    # Dashed line for 0.8 Accuracy
+    plt.axhline(y=0.8, color='y', linestyle='--')
 
-    # plt.xlabel("Epoch")
-    # plt.ylabel("Accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
 
-    # # Second subplot
-    # plt.subplot(122)
-    # plt.plot(x, train_losses, 'r', label="Train")
-    # plt.plot(x, test_losses, 'b', label= "Test")
-    # plt.xlabel("Epoch")
-    # plt.ylabel("Loss")
-    # plt.legend(loc="upper right")
+    # Second subplot
+    plt.subplot(122)
+    plt.plot(x, train_losses, 'r', label="Train")
+    plt.plot(x, test_losses, 'b', label= "Test")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend(loc="upper right")
 
-    # # Format
-    # plt.tight_layout()
+    # Format
+    plt.tight_layout()
 
     # Save and display
     plt.savefig("result.png")
