@@ -11,9 +11,9 @@ class MyModel(tf.keras.Model):
         super(MyModel, self).__init__()
 
         self.layer_list = [
-            tf.keras.layers.Dense(32, activation="sigmoid"),
-            tf.keras.layers.Dense(16, activation="sigmoid"),
-            LSTM_Layer(LSTM_Cell(10)),
+            tf.keras.layers.Dense(32, activation="tanh"),
+            #tf.keras.layers.Dense(16, activation="tanh"),
+            LSTM_Layer(LSTM_Cell(100)),
         
 
             tf.keras.layers.Dense(1, activation="sigmoid")
@@ -56,9 +56,13 @@ def test(model, test_data, loss_function):
 
     for (input, target) in test_data:
         
-        prediction = model(input)
-        
+        prediction = model(input)        
         sample_test_loss = loss_function(target, prediction)
+
+        # prediction shape: (batch_size, 1)
+        # target shape: (batch_size, ) => Add dim for compare
+        target = np.expand_dims(target, -1) # now: (batch_size, 1)
+        
         sample_test_accuracy =  np.round(target, 1) == np.round(prediction, 1) # <- Binary classification
         sample_test_accuracy = np.mean(sample_test_accuracy)
         test_loss_aggregator.append(sample_test_loss.numpy())

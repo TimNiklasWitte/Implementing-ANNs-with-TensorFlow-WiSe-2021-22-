@@ -1,10 +1,11 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from tensorflow._api.v2 import data
 
 from MyModel import *
 
 seq_len = 5
-num_samples = 28000
+num_samples = 100000
 
 RANGE_MAX = 2
 RANGE_MIN = -RANGE_MAX
@@ -13,15 +14,17 @@ RANGE_MIN = -RANGE_MAX
 def main():
  
     dataset = tf.data.Dataset.from_generator(my_integration_task, (tf.float32, tf.uint8))# , output_signature=tf.TensorSpec(shape,dtype))
-    
     dataset = dataset.apply(prepare_data)
- 
-    train_dataset = dataset.take(10000)
-    test_dataset = dataset.take(1000)
+    
+    train_size = 5000
+    test_size = 1000
+    train_dataset = dataset.take(train_size)
+    dataset.skip(train_size)
+    test_dataset = dataset.take(test_size)
 
     ### Hyperparameters
     num_epochs = 10
-    learning_rate = 0.001
+    learning_rate = 0.01
 
     # Initialize the model.
     model = MyModel()
@@ -48,28 +51,7 @@ def main():
     train_losses.append(train_loss)
     
     model.summary()
-
-    fig = plt.figure()
-    fig.suptitle("Accuracy and loss for training and test data")
-
-    ax = fig.add_subplot(121)
-    ax.set_xlim([0, num_epochs])
-    ax.set_ylim([0, 1])
-
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Accuracy")
-
-    ax.axhline(y=0.8, color='y', linestyle='--')
-
-    ax1 = fig.add_subplot(122)
-    ax1.set_xlim([0, num_epochs])
-    ax1.set_ylim([0, 1])
-    #ax1.legend(loc="upper right")
-
-    ax1.set_xlabel("Epoch")
-    ax1.set_ylabel("Loss")
-
-    x = []
+   
     # We train for num_epochs epochs.
     for epoch in range(num_epochs):
         print(f'Epoch: {str(epoch)} starting with accuracy {test_accuracies[-1]}')
@@ -80,25 +62,7 @@ def main():
             train_loss = train_step(model, input, target, cross_entropy_loss, optimizer)
             epoch_loss_agg.append(train_loss)
 
-        # x.append(epoch)
-     
-        # ax.plot(x, test_accuracies, color='g')
-        
-        # ax1.plot(x, train_losses, 'r', label="Train")
-        # ax1.plot(x, test_losses, 'b', label= "Test")
-
-        # if len(x) == 1:
-        #     ax1.legend(loc="upper right")    
-
-        # fig.tight_layout()
-        # fig.canvas.draw()
-        # #fig.show()
-        # plt.pause(0.05)
-        # fig.savefig(f"./Plots/epoch {epoch}.png")
-
-
-
-        # #track training loss
+        # track training loss
         train_losses.append(tf.reduce_mean(epoch_loss_agg))
 
         # testing, so we can track accuracy and test loss
@@ -138,32 +102,32 @@ def main():
 def prepare_data(data):
 
     #cache this progress in memory, as there is no need to redo it; it is deterministic after all
-    data = data.cache()
+    #data = data.cache()
 
     #shuffle, batch, prefetch
-    data = data.shuffle(100)
-    data = data.batch(1) # <-- high batch size decreases accuracy
+    data = data.shuffle(200)
+    data = data.batch(32) # <-- high batch size decreases accuracy
     data = data.prefetch(20)
     #return preprocessed dataset
     return data
 
 
-def integration_task(seq_len, num_samples):
-    for _ in range(num_samples):
-        data = np.random.uniform(RANGE_MIN, RANGE_MAX, seq_len)
-        data = np.expand_dims(data,-1)
-        sum = np.sum(data)
+def integration_task(seq_len):
+    
+    data = np.random.uniform(RANGE_MIN, RANGE_MAX, seq_len)
+    data = np.expand_dims(data,-1)
+    sum = np.sum(data)
 
-        if sum >= 1:
-            return data, 1
-        else:
-            return data, 0
+    if sum >= 1:
+        return data, 1
+    else:
+        return data, 0
 
 
 def my_integration_task():
     global seq_len, num_samples
-    for _ in range(80000):
-        data, target = integration_task(seq_len, num_samples)
+    for _ in range(num_samples):
+        data, target = integration_task(seq_len)
         yield data, target
 
 if __name__ == "__main__":
