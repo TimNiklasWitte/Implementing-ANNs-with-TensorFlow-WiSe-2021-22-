@@ -1,10 +1,10 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from tensorflow._api.v2 import data
+
 
 from MyModel import *
 
-seq_len = 5
+seq_len = 25
 num_samples = 100000
 
 RANGE_MAX = 2
@@ -12,11 +12,12 @@ RANGE_MIN = -RANGE_MAX
 
 
 def main():
- 
-    dataset = tf.data.Dataset.from_generator(my_integration_task, (tf.float32, tf.uint8))# , output_signature=tf.TensorSpec(shape,dtype))
+    
+    # Create dataset from a generator (use wrapper, see below)
+    dataset = tf.data.Dataset.from_generator(my_integration_task, (tf.float32, tf.uint8))
     dataset = dataset.apply(prepare_data)
     
-    train_size = 5000
+    train_size = 10000
     test_size = 1000
     train_dataset = dataset.take(train_size)
     dataset.skip(train_size)
@@ -71,11 +72,12 @@ def main():
         test_accuracies.append(test_accuracy)
 
 
-    x = np.arange(0, len(train_losses))
+    x = range(0, len(train_losses))
 
     # First subplot
     plt.subplot(121)
     plt.plot(x, test_accuracies, 'g')
+    plt.xticks(x)
 
     # Dashed line for 0.8 Accuracy
     plt.axhline(y=0.8, color='y', linestyle='--')
@@ -87,6 +89,7 @@ def main():
     plt.subplot(122)
     plt.plot(x, train_losses, 'r', label="Train")
     plt.plot(x, test_losses, 'b', label= "Test")
+    plt.xticks(x)
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend(loc="upper right")
@@ -105,8 +108,8 @@ def prepare_data(data):
     #data = data.cache()
 
     #shuffle, batch, prefetch
-    data = data.shuffle(200)
-    data = data.batch(32) # <-- high batch size decreases accuracy
+    data = data.shuffle(200) # shuffling random generated data ;)
+    data = data.batch(32)
     data = data.prefetch(20)
     #return preprocessed dataset
     return data
@@ -114,6 +117,18 @@ def prepare_data(data):
 
 def integration_task(seq_len):
     
+    """
+    Creates the sequence (data) and the corresponding target (0 or 1)
+    sum(sequence) >= 1 -> target = 1
+    otherwise:         -> target = 0
+
+    Args:
+        seq_len length of the sequence (number of time steps)
+    
+    Return:
+        data, target  
+    """
+
     data = np.random.uniform(RANGE_MIN, RANGE_MAX, seq_len)
     data = np.expand_dims(data,-1)
     sum = np.sum(data)
@@ -125,6 +140,15 @@ def integration_task(seq_len):
 
 
 def my_integration_task():
+
+    """
+    Wrapper around the integration_task.
+    Passing arguments in tf.data.Dataset.from_generator call is ugly ;)
+
+    Yield:
+        data, target  
+    """
+
     global seq_len, num_samples
     for _ in range(num_samples):
         data, target = integration_task(seq_len)

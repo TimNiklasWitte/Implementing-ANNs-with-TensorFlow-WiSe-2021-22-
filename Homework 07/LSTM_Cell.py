@@ -2,7 +2,12 @@ import tensorflow as tf
 
 class LSTM_Cell(tf.keras.layers.Layer): # <-- Needed to make parameters trainable and to be callable
 
-    # units = hidden size = size of hidden state vector #= The length of the resulting vector (similar to the units argument in Dense layers)
+    """
+    LSTM cell
+    Calc on single time steps
+    """
+
+    # units = hidden size = size of hidden state vector 
     def __init__(self, units):
         super(LSTM_Cell, self).__init__()
         self.units = units
@@ -22,6 +27,18 @@ class LSTM_Cell(tf.keras.layers.Layer): # <-- Needed to make parameters trainabl
     @tf.function
     def call(self, x, states):
         
+        """
+        Propagate the input towards the cell -> SINGLE TIME STEP
+        Same symbols used as in Courseware
+
+        Args:
+            x input of the cell (batch size, input size)
+            states of the cell: tuple (hidden_state, cell_state)
+
+        Return:
+            Output of the cell: tuple (hidden_state, cell_state)
+        """
+
         hidden_state, cell_state = states
 
         concated = tf.concat((hidden_state, x), axis= 1)
