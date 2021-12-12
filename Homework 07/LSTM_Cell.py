@@ -6,9 +6,16 @@ class LSTM_Cell(tf.keras.layers.Layer): # <-- Needed to make parameters trainabl
     LSTM cell
     Calc on single time steps
     """
-
-    # units = hidden size = size of hidden state vector 
+ 
     def __init__(self, units):
+
+        """
+        Create the LSTM_Cell
+
+        Args:
+            units aka hidden size = size of hidden state vector 
+        """
+
         super(LSTM_Cell, self).__init__()
         self.units = units
 
