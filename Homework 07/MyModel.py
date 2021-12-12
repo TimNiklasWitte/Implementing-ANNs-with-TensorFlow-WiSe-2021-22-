@@ -10,7 +10,7 @@ class MyModel(tf.keras.Model):
     General idea
     (1) Dense Layer -> Increase input from 5 to 32 
     (2) LSTM_Layer 
-    (3) Softmax -> Classification
+    (3) Sigmoid -> Classification: '1': Output > 0.5, otherwise: '0'
     """
     def __init__(self):
         super(MyModel, self).__init__()
@@ -18,7 +18,7 @@ class MyModel(tf.keras.Model):
         # seq_len = 25
         # input_size = 1 (only a number)
         self.layer_list = [
-            
+
             # input shape: (batch_size, seq_len, input_size) = (32, 25, 1) 
             # (1)
             tf.keras.layers.Dense(32, activation="tanh"), # output shape: 32, 25, 32 

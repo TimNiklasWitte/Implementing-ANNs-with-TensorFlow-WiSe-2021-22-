@@ -8,6 +8,7 @@ class LSTM_Layer(tf.keras.layers.Layer): # <-- Needed to make parameters trainab
     The cell will be called n-times recurrent with the corresponding input for that time step.
     n is time length of the time step
     """
+    
     def __init__(self, cell):
         super(LSTM_Layer, self).__init__()
         self.cell = cell
