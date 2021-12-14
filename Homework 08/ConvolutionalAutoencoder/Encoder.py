@@ -4,21 +4,33 @@ class Encoder(tf.keras.layers.Layer): # <-- Needed to make parameters trainable 
     def __init__(self, embedding_size):
         super(Encoder, self).__init__()
         self.layer_list = [
-            #tf.keras.layers.Conv2D(15, kernel_size=(3, 3), strides=2, padding='same', activation='relu'),
-            tf.keras.layers.Conv2D(16, kernel_size=(3, 3), strides=2, padding='same', activation='relu'),
-            tf.keras.layers.Conv2D(8, kernel_size=(3, 3), strides=2, padding='same', activation='relu'),
+         
+            tf.keras.layers.Conv2D(32, kernel_size=(3, 3), strides=2, padding='same'),
+            tf.keras.layers.Conv2D(16, kernel_size=(3, 3), strides=2, padding='same'),
+           
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(embedding_size)
+            tf.keras.layers.Dense(embedding_size, activation='tanh')
         ]
     
-    #@tf.function
+
+    
+    @tf.function
     def call(self, x):
+        for layer in self.layer_list: 
+            x = layer(x)       
+        return x
+    
+    #@tf.function
+    def getShapes(self, x):
         
-        ashape = None
+        shapeAfterLastConv = None
+        denseLayerSize = None
         for layer in self.layer_list:
             
             x = layer(x)
             if isinstance(layer, tf.keras.layers.Conv2D):
-                ashape = x.shape
+                shapeAfterLastConv = x.shape[1:] # ignore batch dim
+            elif isinstance(layer, tf.keras.layers.Flatten):
+                denseLayerSize = x.shape[1] # ignore batch dim
 
-        return x, ashape
+        return shapeAfterLastConv, denseLayerSize

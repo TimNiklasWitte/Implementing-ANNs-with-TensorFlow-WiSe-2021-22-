@@ -13,15 +13,19 @@ def main():
     train_dataset = train_ds.apply(prepare_mnist_data)
     test_dataset = test_ds.apply(prepare_mnist_data)
 
-    train_dataset = train_dataset.take(1000)
+    train_dataset = train_dataset.take(100)
     test_dataset = test_dataset.take(100)
 
      ### Hyperparameters
     num_epochs = 10
-    learning_rate = 0.01
+    learning_rate = 0.001
+    embedding_size = 10
 
     # Initialize the model.
-    model = Autoencoder(15)
+    for elem in train_dataset.take(1):
+        noisy, img = elem
+
+    model = Autoencoder(img, embedding_size)
 
     # Initialize the loss: categorical cross entropy. Check out 'tf.keras.losses'.
     mse = tf.keras.losses.MeanSquaredError()
@@ -63,29 +67,34 @@ def main():
         test_losses.append(test_loss)
 
 
-    # for elem in train_dataset.take(1):
+
+    for elem in train_dataset.take(1):
+        noised_img, orginal_img = elem
+    
+        removed_noise = model(noised_img)
+
+        orginal_img = orginal_img[0]
+        noised_img = noised_img[0]
+        removed_noise = removed_noise[0]
+
+
+        plt.subplot(131)
         
-    #     orginal, noised = elem
+        plt.imshow(orginal_img)
 
-    #     orginal = orginal[0]
-    #     noised = noised[0]
- 
-    #     showPlots(orginal, noised)
+        plt.subplot(132)
+        plt.imshow(noised_img)
+       
+        plt.subplot(133)
+        plt.imshow(removed_noise)
+
+        plt.show()
 
 
-
-def showPlots(orginal, noised):
-    plt.subplot(121)
-    plt.imshow(orginal)
-
-    plt.subplot(122)
-    plt.imshow(noised)
-
-    plt.show()
 
 def noisy(img):
 
-    noise = tf.random.normal(shape=img.shape, mean=0.0, stddev=0.4, dtype=tf.dtypes.float32)
+    noise = tf.random.normal(shape=img.shape, mean=0.0, stddev=0.1, dtype=tf.dtypes.float32)
 
     img = img + noise
 
@@ -101,9 +110,6 @@ def noisy(img):
 
 
 def prepare_mnist_data(mnist):
-    #flatten the images into vectors
-    #fashion = fashion.map(lambda img, target: (tf.reshape(img, (-1,)), target))
-
     
     # Remove target
     mnist = mnist.map(lambda img, target: img)
@@ -116,14 +122,14 @@ def prepare_mnist_data(mnist):
     mnist = mnist.map(lambda img: (img/128.)-1.)
 
     # Add noise
-    mnist = mnist.map(lambda img: (img, noisy(img)))
+    mnist = mnist.map(lambda img: (noisy(img), img))
  
 
     #cache this progress in memory, as there is no need to redo it; it is deterministic after all
     mnist = mnist.cache()
     #shuffle, batch, prefetch
     mnist = mnist.shuffle(1000)
-    mnist = mnist.batch(80)
+    mnist = mnist.batch(32)
     mnist = mnist.prefetch(20)
     #return preprocessed dataset
     return mnist

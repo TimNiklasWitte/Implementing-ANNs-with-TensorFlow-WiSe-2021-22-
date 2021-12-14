@@ -5,23 +5,18 @@ from ConvolutionalAutoencoder.Encoder import *
 from ConvolutionalAutoencoder.Decoder import *
 
 class Autoencoder(tf.keras.Model):
-    def __init__(self, embedding_size):
+    def __init__(self, x, embedding_size):
         super(Autoencoder, self).__init__()
         self.encoder = Encoder(embedding_size)
-        self.decoder = Decoder()
 
-    #@tf.function
+        shapeAfterLastConv, denseLayerSize = self.encoder.getShapes(x)
+
+        self.decoder = Decoder(shapeAfterLastConv, denseLayerSize)
+
+    @tf.function
     def call(self, x):
-        embedding, shape = self.encoder(x)
-        # print(embedding.shape)
-        # print("----")
-        # embedding = tf.keras.layers.Reshape( (-1,5, 3))(embedding)
-        # print(embedding.shape)
-
-        # embedding = tf.keras.layers.Conv2DTranspose(filters=2, kernel_size=(2,2), strides=2, padding='same', activation='relu')(embedding)
-        # print(embedding.shape)
-
-        decoded = self.decoder(embedding, shape)
+        embedding = self.encoder(x)
+        decoded = self.decoder(embedding)
         return decoded
 
     
@@ -40,8 +35,9 @@ class Autoencoder(tf.keras.Model):
         test_loss_aggregator = []
 
         for (input, target) in test_data:
-
-            prediction = self(input)        
+               
+            prediction = self(input)    
+         
             sample_test_loss = loss_function(target, prediction)
 
             test_loss_aggregator.append(sample_test_loss.numpy())
