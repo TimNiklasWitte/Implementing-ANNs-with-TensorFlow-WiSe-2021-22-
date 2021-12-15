@@ -17,7 +17,7 @@ def main():
     #test_dataset = test_dataset.take(1000)
 
     ### Hyperparameters
-    num_epochs = 15
+    num_epochs = 20
     learning_rate = 0.001
 
     embedding_sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
