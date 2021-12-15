@@ -7,10 +7,9 @@ from ConvolutionalAutoencoder.Decoder import *
 class Autoencoder(tf.keras.Model):
     def __init__(self, x, embedding_size):
         super(Autoencoder, self).__init__()
+
         self.encoder = Encoder(embedding_size)
-
         shapeAfterLastConv, denseLayerSize = self.encoder.getShapes(x)
-
         self.decoder = Decoder(shapeAfterLastConv, denseLayerSize)
 
     @tf.function
@@ -32,15 +31,19 @@ class Autoencoder(tf.keras.Model):
 
     def test(self, test_data, loss_function):
         # test over complete test data
+        
+
         test_loss_aggregator = []
 
-        for (input, target) in test_data:
-               
-            prediction = self(input)    
-         
+        for input, target, _ in test_data: # ignore label
+            
+            prediction = self(input)   
+        
             sample_test_loss = loss_function(target, prediction)
 
             test_loss_aggregator.append(sample_test_loss.numpy())
-    
+
+
         test_loss = tf.reduce_mean(test_loss_aggregator)
+
         return test_loss

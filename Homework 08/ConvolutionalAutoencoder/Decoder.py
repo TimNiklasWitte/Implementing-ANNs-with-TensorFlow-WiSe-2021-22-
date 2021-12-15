@@ -5,15 +5,13 @@ class Decoder(tf.keras.layers.Layer): # <-- Needed to make parameters trainable 
 
         super(Decoder, self).__init__()
         self.layer_list = [
-            
-            tf.keras.layers.Dense(denseLayerSize, activation='tanh'),
 
+            tf.keras.layers.Dense(denseLayerSize, activation='relu'),
             tf.keras.layers.Reshape(shapeAfterLastConv), 
 
+            tf.keras.layers.Conv2DTranspose(4, kernel_size=(4,4), strides=2, padding='same', activation='relu'),
+       
 
-            tf.keras.layers.Conv2DTranspose(16, kernel_size=(3,3), strides=2, padding='same'),
-            tf.keras.layers.Conv2DTranspose(32, kernel_size=(3,3), strides=2, padding='same'),
-   
             tf.keras.layers.Conv2D(1, kernel_size=(3, 3), padding='same', activation='sigmoid')
         ]
     

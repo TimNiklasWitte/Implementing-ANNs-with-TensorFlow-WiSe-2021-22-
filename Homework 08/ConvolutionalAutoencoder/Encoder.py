@@ -4,15 +4,13 @@ class Encoder(tf.keras.layers.Layer): # <-- Needed to make parameters trainable 
     def __init__(self, embedding_size):
         super(Encoder, self).__init__()
         self.layer_list = [
-         
-            tf.keras.layers.Conv2D(32, kernel_size=(3, 3), strides=2, padding='same'),
-            tf.keras.layers.Conv2D(16, kernel_size=(3, 3), strides=2, padding='same'),
-           
+            
+  
+            tf.keras.layers.Conv2D(4, kernel_size=(4, 4), strides=2, padding='same', activation='relu'),
+            
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(embedding_size, activation='tanh')
+            tf.keras.layers.Dense(embedding_size, activation='relu')
         ]
-    
-
     
     @tf.function
     def call(self, x):
