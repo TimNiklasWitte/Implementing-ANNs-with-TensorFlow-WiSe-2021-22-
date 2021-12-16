@@ -6,9 +6,6 @@ import numpy as np
 from ConvolutionalAutoencoder.Autoencoder import * 
 
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
-
-from sklearn import datasets
 from sklearn.manifold import TSNE
 
 def main():
@@ -30,7 +27,6 @@ def main():
     for embedding_size in embedding_sizes:
 
         print(f"Embedding size: {embedding_size}")
-
 
         # Initialize the model.
         for elem in train_dataset.take(1):
@@ -56,9 +52,9 @@ def main():
         train_loss  = model.test(train_dataset, mse)
         train_losses.append(train_loss)
 
-        model.summary()
-        model.encoder.summary()
-        model.decoder.summary()
+        # model.summary()
+        # model.encoder.summary()
+        # model.decoder.summary()
        
    
         # We train for num_epochs epochs.
@@ -81,6 +77,19 @@ def main():
         #############
         # Plotting
         #############
+
+        # Loss
+        x = range(0, len(train_losses))
+        plt.figure()
+        plt.title(f"Train and test losses - Embedding size: {embedding_size}")
+        plt.plot(x, train_losses, 'r', label="Train")
+        plt.plot(x, test_losses, 'b', label= "Test")
+        plt.xticks(x)
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.legend(loc="upper right")
+        plt.tight_layout()
+        plt.savefig(f"./ConvolutionalAutoencoder/Plots/Loss/EmbeddingSize_{embedding_size}.png")
 
         # Plot orginal, noised and denoised image
         print(f"Create plot for embedding size {embedding_size}")
@@ -179,6 +188,7 @@ def main():
         colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'lime', 'orange', 'purple'
         for i, c, label in zip(range(0,10), colors, np.arange(0,11)):
             plt.scatter(X_2d[y == i, 0], X_2d[y == i, 1], c=c, label=label)
+            plt.plot(X_2d[y == i, 0], X_2d[y == i, 1], c=c)
         
         plt.title(f"Latent Space - Embedding size: {embedding_size}")
         plt.legend()
