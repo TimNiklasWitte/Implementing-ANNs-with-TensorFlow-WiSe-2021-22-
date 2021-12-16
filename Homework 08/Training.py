@@ -1,3 +1,4 @@
+from sys import platform
 import tensorflow_datasets as tfds
 import tensorflow as tf
 import numpy as np
@@ -5,18 +6,18 @@ import numpy as np
 from ConvolutionalAutoencoder.Autoencoder import * 
 
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 
 from sklearn import datasets
 from sklearn.manifold import TSNE
 
 def main():
-
+    
     train_ds, test_ds = tfds.load('mnist', split=['train', 'test'], as_supervised=True)
 
     train_dataset = train_ds.apply(prepare_mnist_data)
     test_dataset = test_ds.apply(prepare_mnist_data)
 
- 
     #train_dataset = train_dataset.take(100)
     #test_dataset = test_dataset.take(1000)
 
@@ -68,9 +69,6 @@ def main():
             epoch_loss_agg = []
             for input,target, _ in train_dataset: # ignore label
                 train_loss = model.train_step(input, target, mse, optimizer)
-
-                
-
                 epoch_loss_agg.append(train_loss)
 
             # track training loss
@@ -80,27 +78,38 @@ def main():
             test_loss = model.test(test_dataset, mse)
             test_losses.append(test_loss)
 
+        #############
+        # Plotting
+        #############
+
+        # Plot orginal, noised and denoised image
         print(f"Create plot for embedding size {embedding_size}")
 
         fig, axs = plt.subplots(nrows=4, ncols=50)
         total_cnt = 0
         digit_cnt = 0
         digit = 0
-        done = False
-        for elem in test_dataset.take(100):
-            if done:
+        plots_done = False
+
+        embedding_done = False
+
+        labels_list = []
+        embedding_list = []
+
+        for elem in test_dataset.take(500):
+            if plots_done and embedding_done:
                 break
-        
+            
             noised_imgs, orginal_imgs, labels = elem
             denoised_imgs = model(noised_imgs)
 
-            embeddings = model.encoder(noised_imgs)
+            embeddings = model.encoder(noised_imgs) 
             embeddings = np.expand_dims(embeddings, -1)
-            #embeddings = np.expand_dims(embeddings, -1)
+            embeddings = np.expand_dims(embeddings, -1)
 
             for i in range(16): 
 
-                if done:
+                if plots_done and embedding_done:
                     break 
 
                 orginal_img = orginal_imgs[i]
@@ -109,10 +118,15 @@ def main():
                 denoised_img = denoised_imgs[i]
                 embedding = embeddings[i]
                 
+                embedding_list.append(embedding.flatten())
+             
+
                 height = embedding.shape[0]
                 height = int(height/2)
                 embedding = np.reshape(embedding, newshape=(height,2,1))
 
+                labels_list.append(label)
+                
 
                 if label == digit:
                     axs[0, total_cnt].imshow(orginal_img)
@@ -131,59 +145,55 @@ def main():
 
                     digit_cnt+=1
 
-                    if digit_cnt == 5:
-                        digit_cnt = 0
-                        digit += 1
+                if digit_cnt == 5:
+                    digit_cnt = 0
+                    digit += 1
 
                 if total_cnt == 50:
                     
-                    for ax in axs.flat:
-                        ax.set_axis_off()
+                    plots_done = True
+                
+                if len(embedding_list) == 1000:
+                    embedding_done = True
 
-                    fig.set_size_inches(75, 6)
-                    plt.tight_layout()
-                
-                
-                    plt.savefig(f"Plots/Embedding size {embedding_size}.png")
-                
-                    done = True
+        fig.set_size_inches(75, 6)
+        fig.suptitle(f"Original, noised, denoised image and corresponding embedding - Embedding size: {embedding_size}")
+        plt.tight_layout()
+
+        for ax in axs.flat:
+            ax.set_axis_off()
+
+        plt.savefig(f"./ConvolutionalAutoencoder/Plots/Denoising/EmbeddingSize_{embedding_size}.png")
+
+        # Plot latent space 
+        # see: https://scipy-lectures.org/packages/scikit-learn/auto_examples/plot_tsne.html
+
+        X = np.array(embedding_list)
+        y = np.array(labels_list)
+        
+        tsne = TSNE(n_components=2, random_state=0)
+
+        X_2d = tsne.fit_transform(X)
+
+        plt.figure(figsize=(6, 5))
+        colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'lime', 'orange', 'purple'
+        for i, c, label in zip(range(0,10), colors, np.arange(0,11)):
+            plt.scatter(X_2d[y == i, 0], X_2d[y == i, 1], c=c, label=label)
+        
+        plt.title(f"Latent Space - Embedding size: {embedding_size}")
+        plt.legend()
+
+        plt.savefig(f"./ConvolutionalAutoencoder/Plots/LatentSpace/EmbeddingSize_{embedding_size}.png")
 
         print("#############################")
 
 
-# tsne = TSNE(n_components=2, random_state=0)
-
-    # digits = datasets.load_digits()
-
-    
-    # X = digits.data[:500]
-    # y = digits.target[:500]
-
-    # X_2d = tsne.fit_transform(X)
-
-    # target_ids = range(len(digits.target_names))
-
-
-    # plt.figure(figsize=(6, 5))
-    # colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
-    # for i, c, label in zip(target_ids, colors, digits.target_names):
-    #     plt.scatter(X_2d[y == i, 0], X_2d[y == i, 1], c=c, label=label)
-    # plt.legend()
-    # plt.show()
 
 def noisy(img):
 
     noise = tf.random.normal(shape=img.shape, mean=0.0, stddev=1.0, dtype=tf.dtypes.float32)
 
     img = img + noise
-
-    #minValue = tf.reduce_min(img)
-    #maxValue = tf.reduce_max(img)
-    
-    # Min-max feature scaling
-    # a = -1
-    # b = 1
-    # img = -1 + ((img - minValue)*(b - a)) / (maxValue - minValue)
     
     img = tf.clip_by_value(img, clip_value_min=-1, clip_value_max=1)
 
