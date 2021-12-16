@@ -25,25 +25,18 @@ class Autoencoder(tf.keras.Model):
         with tf.GradientTape() as tape:
             prediction = self(input)
             loss = loss_function(target, prediction)
-            gradients = tape.gradient(loss, self.trainable_variables)
+
+        gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
         return loss
 
     def test(self, test_data, loss_function):
         # test over complete test data
-        
-
         test_loss_aggregator = []
-
-        for input, target, _ in test_data: # ignore label
-            
+        for input, target, _ in test_data: # ignore label            
             prediction = self(input)   
-        
             sample_test_loss = loss_function(target, prediction)
-
             test_loss_aggregator.append(sample_test_loss.numpy())
 
-
         test_loss = tf.reduce_mean(test_loss_aggregator)
-
         return test_loss

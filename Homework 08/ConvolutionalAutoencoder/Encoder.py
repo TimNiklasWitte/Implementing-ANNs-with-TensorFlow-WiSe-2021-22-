@@ -1,14 +1,17 @@
 import tensorflow as tf
 
-class Encoder(tf.keras.layers.Layer): # <-- Needed to make parameters trainable and to be callable
+class Encoder(tf.keras.Model): # <-- Needed to make parameters trainable and to be callable
     def __init__(self, embedding_size):
         super(Encoder, self).__init__()
         self.layer_list = [
-            
-  
-            tf.keras.layers.Conv2D(4, kernel_size=(4, 4), strides=2, padding='same', activation='relu'),
-            
+                    
+            tf.keras.layers.Conv2D(32, kernel_size=(3, 3), strides=2, padding='same', activation='relu'),
+            tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=2, padding='same', activation='relu'),
+        
             tf.keras.layers.Flatten(),
+
+            tf.keras.layers.Dense(7*7*16),
+
             tf.keras.layers.Dense(embedding_size, activation='relu')
         ]
     

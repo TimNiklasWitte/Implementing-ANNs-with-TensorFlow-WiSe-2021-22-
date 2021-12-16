@@ -6,21 +6,25 @@ from ConvolutionalAutoencoder.Autoencoder import *
 
 import matplotlib.pyplot as plt
 
+from sklearn import datasets
+from sklearn.manifold import TSNE
+
 def main():
 
     train_ds, test_ds = tfds.load('mnist', split=['train', 'test'], as_supervised=True)
 
     train_dataset = train_ds.apply(prepare_mnist_data)
     test_dataset = test_ds.apply(prepare_mnist_data)
-       
-    #train_dataset = train_dataset.take(10000)
+
+ 
+    #train_dataset = train_dataset.take(100)
     #test_dataset = test_dataset.take(1000)
 
     ### Hyperparameters
-    num_epochs = 20
+    num_epochs = 10
     learning_rate = 0.001
 
-    embedding_sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    embedding_sizes = [2,4,6,8,10]
     
     for embedding_size in embedding_sizes:
 
@@ -33,7 +37,7 @@ def main():
 
         model = Autoencoder(img, embedding_size)
     
-        # Initialize the loss: categorical cross entropy. Check out 'tf.keras.losses'.
+        # Initialize the loss:
         mse = tf.keras.losses.MeanSquaredError()
 
         # Initialize the optimizer: 
@@ -50,8 +54,11 @@ def main():
         #check how model performs on train data once before we begin
         train_loss  = model.test(train_dataset, mse)
         train_losses.append(train_loss)
-    
+
         model.summary()
+        model.encoder.summary()
+        model.decoder.summary()
+       
    
         # We train for num_epochs epochs.
         for epoch in range(num_epochs):
@@ -61,6 +68,9 @@ def main():
             epoch_loss_agg = []
             for input,target, _ in train_dataset: # ignore label
                 train_loss = model.train_step(input, target, mse, optimizer)
+
+                
+
                 epoch_loss_agg.append(train_loss)
 
             # track training loss
@@ -81,36 +91,40 @@ def main():
             if done:
                 break
         
-            noised_img, orginal_img, label = elem
-            denoised_img = model(noised_img)
+            noised_imgs, orginal_imgs, labels = elem
+            denoised_imgs = model(noised_imgs)
 
-            embedding = model.encoder(noised_img)
-            embedding = np.expand_dims(embedding, -1)
-            embedding = np.expand_dims(embedding, -1)
+            embeddings = model.encoder(noised_imgs)
+            embeddings = np.expand_dims(embeddings, -1)
+            #embeddings = np.expand_dims(embeddings, -1)
 
             for i in range(16): 
 
                 if done:
                     break 
 
-                a = orginal_img[i]
-                b = noised_img[i]
-                c = label.numpy()[i]
-                d = denoised_img[i]
-                f = embedding[i]
+                orginal_img = orginal_imgs[i]
+                noised_img = noised_imgs[i]
+                label = labels.numpy()[i]
+                denoised_img = denoised_imgs[i]
+                embedding = embeddings[i]
                 
+                height = embedding.shape[0]
+                height = int(height/2)
+                embedding = np.reshape(embedding, newshape=(height,2,1))
 
-                if c == digit:
-                    axs[0, total_cnt].imshow(a)
+
+                if label == digit:
+                    axs[0, total_cnt].imshow(orginal_img)
                     axs[0, total_cnt].set_title("Orginal")
 
-                    axs[1, total_cnt].imshow(b)
+                    axs[1, total_cnt].imshow(noised_img)
                     axs[1, total_cnt].set_title("Noised")
 
-                    axs[2, total_cnt].imshow(d)
+                    axs[2, total_cnt].imshow(denoised_img)
                     axs[2, total_cnt].set_title("Reconstructed")
 
-                    axs[3, total_cnt].imshow(f)
+                    axs[3, total_cnt].imshow(embedding)
                     axs[3, total_cnt].set_title("Embedding")
 
                     total_cnt+=1
@@ -136,6 +150,26 @@ def main():
 
         print("#############################")
 
+
+# tsne = TSNE(n_components=2, random_state=0)
+
+    # digits = datasets.load_digits()
+
+    
+    # X = digits.data[:500]
+    # y = digits.target[:500]
+
+    # X_2d = tsne.fit_transform(X)
+
+    # target_ids = range(len(digits.target_names))
+
+
+    # plt.figure(figsize=(6, 5))
+    # colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
+    # for i, c, label in zip(target_ids, colors, digits.target_names):
+    #     plt.scatter(X_2d[y == i, 0], X_2d[y == i, 1], c=c, label=label)
+    # plt.legend()
+    # plt.show()
 
 def noisy(img):
 
