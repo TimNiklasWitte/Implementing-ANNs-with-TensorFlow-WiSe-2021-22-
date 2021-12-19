@@ -15,8 +15,8 @@ def main():
     train_dataset = train_ds.apply(prepare_mnist_data)
     test_dataset = test_ds.apply(prepare_mnist_data)
 
-    #train_dataset = train_dataset.take(100)
-    #test_dataset = test_dataset.take(1000)
+    #train_dataset = train_dataset.take(10)
+    #test_dataset = test_dataset.take(10)
 
     ### Hyperparameters
     num_epochs = 10
@@ -24,8 +24,12 @@ def main():
 
     embedding_sizes = [2,4,6,8,10]
     
-    for embedding_size in embedding_sizes:
+    fig_loss, axs_loss = plt.subplots(nrows=len(embedding_sizes), ncols=1, figsize=(3, 4*len(embedding_sizes)))
+    fig_latentSpace, axs_latentSpace = plt.subplots(nrows=len(embedding_sizes), ncols=1, figsize=(5, 6*len(embedding_sizes)))
 
+    for idx_embedding_sizes, embedding_size in enumerate(embedding_sizes):
+        
+        print("###################")
         print(f"Embedding size: {embedding_size}")
 
         # Initialize the model.
@@ -56,7 +60,6 @@ def main():
         # model.encoder.summary()
         # model.decoder.summary()
        
-   
         # We train for num_epochs epochs.
         for epoch in range(num_epochs):
             print(f'Epoch: {str(epoch)} starting with loss {test_losses[-1]}')
@@ -80,20 +83,16 @@ def main():
 
         # Loss
         x = range(0, len(train_losses))
-        plt.figure()
-        plt.title(f"Train and test losses - Embedding size: {embedding_size}")
-        plt.plot(x, train_losses, 'r', label="Train")
-        plt.plot(x, test_losses, 'b', label= "Test")
-        plt.xticks(x)
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.legend(loc="upper right")
-        plt.tight_layout()
-        plt.savefig(f"./ConvolutionalAutoencoder/Plots/Loss/EmbeddingSize_{embedding_size}.png")
-
+        #plt.figure()
+        axs_loss[idx_embedding_sizes].set_title(f"Embedding size: {embedding_size}")
+        axs_loss[idx_embedding_sizes].plot(x, train_losses, 'r', label="Train")
+        axs_loss[idx_embedding_sizes].plot(x, test_losses, 'b', label= "Test")
+        axs_loss[idx_embedding_sizes].set_xticks(x)
+        axs_loss[idx_embedding_sizes].set_xlabel("Epoch")
+        axs_loss[idx_embedding_sizes].set_ylabel("Loss")
+        axs_loss[idx_embedding_sizes].legend(loc="upper right")
+       
         # Plot orginal, noised and denoised image
-        print(f"Create plot for embedding size {embedding_size}")
-
         fig, axs = plt.subplots(nrows=4, ncols=50)
         total_cnt = 0
         digit_cnt = 0
@@ -167,12 +166,12 @@ def main():
 
         fig.set_size_inches(75, 6)
         fig.suptitle(f"Original, noised, denoised image and corresponding embedding - Embedding size: {embedding_size}")
-        plt.tight_layout()
+        fig.tight_layout()
 
         for ax in axs.flat:
             ax.set_axis_off()
 
-        plt.savefig(f"./ConvolutionalAutoencoder/Plots/Denoising/EmbeddingSize_{embedding_size}.png")
+        fig.savefig(f"./ConvolutionalAutoencoder/Plots/Denoising/EmbeddingSize_{embedding_size}.png")
 
         # Plot latent space 
         # see: https://scipy-lectures.org/packages/scikit-learn/auto_examples/plot_tsne.html
@@ -184,19 +183,25 @@ def main():
 
         X_2d = tsne.fit_transform(X)
 
-        plt.figure(figsize=(6, 5))
+        axs_latentSpace[idx_embedding_sizes].set_title(f"Embedding size: {embedding_size}")
+
         colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'lime', 'orange', 'purple'
         for i, c, label in zip(range(0,10), colors, np.arange(0,11)):
-            plt.scatter(X_2d[y == i, 0], X_2d[y == i, 1], c=c, label=label)
-            plt.plot(X_2d[y == i, 0], X_2d[y == i, 1], c=c)
+            axs_latentSpace[idx_embedding_sizes].scatter(X_2d[y == i, 0], X_2d[y == i, 1], c=c, label=label)
+            axs_latentSpace[idx_embedding_sizes].plot(X_2d[y == i, 0], X_2d[y == i, 1], c=c)
         
-        plt.title(f"Latent Space - Embedding size: {embedding_size}")
-        plt.legend()
+        axs_latentSpace[idx_embedding_sizes].legend()
 
-        plt.savefig(f"./ConvolutionalAutoencoder/Plots/LatentSpace/EmbeddingSize_{embedding_size}.png")
+        
+    # Save loss plot
+    fig_loss.suptitle("Train and test losses")
+    fig_loss.tight_layout()
+    fig_loss.savefig("./ConvolutionalAutoencoder/Plots/Loss.png")
 
-        print("#############################")
-
+    # Save 
+    #fig_latentSpace.suptitle("Latent Space (Dimension Reduction to 2D)")
+    fig_latentSpace.tight_layout()
+    fig_latentSpace.savefig("./ConvolutionalAutoencoder/Plots/LatentSpace.png")
 
 
 def noisy(img):
