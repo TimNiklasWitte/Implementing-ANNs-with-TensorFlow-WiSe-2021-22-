@@ -43,7 +43,6 @@ class Autoencoder(tf.keras.Model):
     @tf.function
     def my_loss_function(self, input, target, reconstruction_loss, mu, sigma):
 
-     
         recon_loss = reconstruction_loss(input, target)
         
         # KL divergence
