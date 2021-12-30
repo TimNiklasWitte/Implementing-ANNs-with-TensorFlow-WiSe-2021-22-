@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 from Autoencoder import * 
-
+import matplotlib.pyplot as plt
 
 def main():
     
@@ -13,14 +13,14 @@ def main():
     train_dataset = train_ds.apply(prepare_mnist_data)
     test_dataset = test_ds.apply(prepare_mnist_data)
 
-    #train_dataset = train_dataset.take(10)
-    #test_dataset = test_dataset.take(10)
+    # train_dataset = train_dataset.take(10000)
+    # test_dataset = test_dataset.take(10)
 
     ### Hyperparameters
     num_epochs = 10
     learning_rate = 0.001
 
-    embedding_size = 5
+    embedding_size = 2
     
     model = Autoencoder(embedding_size)
     
@@ -62,6 +62,35 @@ def main():
         # testing, so we can track accuracy and test loss
         test_loss = model.test(test_dataset, mse)
         test_losses.append(test_loss)
+
+
+    NUM_PLOTS = 30
+    fig, axs = plt.subplots(nrows=NUM_PLOTS, ncols=NUM_PLOTS)
+
+    for i in range(NUM_PLOTS):
+        for j in range(NUM_PLOTS):
+
+            y = int(i - NUM_PLOTS/2)
+            x = int(j - NUM_PLOTS/2)
+
+            data = np.array([x,y])
+            data = np.expand_dims(data, axis=0) # add batch dim
+            result = model.decoder(data)[0]
+
+            axs[i, j].set_title(f"[{x},{y}]")
+            axs[i, j].imshow(result)
+    
+    fig.set_size_inches(25, 25)
+
+    # Remove axis labels
+    for ax in axs.flat:
+        ax.set_axis_off()
+
+    plt.tight_layout()
+
+    fig.savefig("GeneratedDigits.png")
+    #plt.show()
+
 
 
 def noisy(img):

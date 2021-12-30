@@ -18,7 +18,6 @@ class Decoder(tf.keras.Model): # <-- Needed to make parameters trainable and to 
 
     @tf.function
     def call(self, x):
-        
         for layer in self.layer_list:
             x = layer(x)
         return x
