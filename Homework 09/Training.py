@@ -2,35 +2,78 @@ import os
 import urllib.request
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.core.fromnumeric import shape
+
+from tensorflow.keras.callbacks import TensorBoard
 
 import tensorflow as tf
+import tqdm
 
-from Generator import *
-from Discriminator import *
+from GAN import *
+
+
+category = "candle"
 
 def main():
+    # Download data
+    if not os.path.isfile(f"{category}.npy"):
+        url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{category}.npy"  
+        urllib.request.urlretrieve(url, f"{category}.npy")
+
+    #tensorboard = TensorBoard(log_dir="logs/{}".format(NAME))
+    file_path = "test_logs/test"
+    summary_writer = tf.summary.create_file_writer(file_path)
+
     dataset = tf.data.Dataset.from_generator(dataGenerator, (tf.uint8))
     dataset = dataset.apply(prepare_data)
     
-    train_size = 1000
-    test_size = 10
+    train_size = 10000
+    test_size = 200
     train_dataset = dataset.take(train_size)
     dataset.skip(train_size)
     test_dataset = dataset.take(test_size)
 
-
-    for epoch in range(num_epochs):
-
-
-
-    # for elm in train_dataset.take(1):
-    #     plt.imshow(elm[0])
-    #     plt.show()
-
-    #print(tf.random.normal(shape=(100,1)))
+    num_epochs = 10
     
-    #dataGenerator()
+    gan = GAN()
+
+     # Initialize lists for later visualization.
+    train_losses = []
+
+    test_losses = []
+    test_accuracies = []
+
+    #testing once before we begin
+    test_loss, test_accuracy = gan.test(test_dataset)
+    test_losses.append(test_loss)
+    test_accuracies.append(test_accuracy)
+
+    #check how model performs on train data once before we begin
+    train_loss, _ = gan.test(test_dataset)
+    train_losses.append(train_loss)
+
+     # We train for num_epochs epochs.
+    for epoch in range(num_epochs):
+        print(f'Epoch: {str(epoch)} starting with accuracy {test_accuracies[-1]}')
+
+        #training (and checking in with training)
+        epoch_loss_agg = []
+        for data in tqdm.tqdm(train_dataset,position=0, leave=True):
+            train_loss = gan.train_step(data)
+            epoch_loss_agg.append(train_loss)
+
+        # track training loss
+        train_losses.append(tf.reduce_mean(epoch_loss_agg))
+
+        # testing, so we can track accuracy and test loss
+        test_loss, test_accuracy = gan.test(test_dataset)
+        test_losses.append(test_loss)
+        test_accuracies.append(test_accuracy)
+
+        with summary_writer.as_default():
+            z = tf.random.normal([32,100])
+            img = gan.G(z)
+            tf.summary.image(name="generated_images",data = img, step=epoch, max_outputs=32)
+
 
 def prepare_data(data):
 
@@ -53,17 +96,11 @@ def prepare_data(data):
     #return preprocessed dataset
     return data
 
-
+    
 def dataGenerator():
-
-    category = "candle"
-
-    if not os.path.isfile(f"{category}.npy"):
-        url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{category}.npy"  
-        urllib.request.urlretrieve(url, f"{category}.npy")
+    global category
 
     images = np.load(f"{category}.npy")
-
     for image in images:
         yield image
 

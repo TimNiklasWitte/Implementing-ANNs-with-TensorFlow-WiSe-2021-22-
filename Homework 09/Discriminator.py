@@ -11,16 +11,22 @@ class Discriminator(tf.keras.Model): # <-- Needed to make parameters trainable a
         
             tf.keras.layers.Flatten(),
 
-            tf.keras.layers.Dense(100, activation='sigmoid'),
+            #tf.keras.layers.Dense(50, activation='sigmoid'),
 
             tf.keras.layers.Dense(1, activation='sigmoid'),
         ]
 
+    @tf.function
     def call(self, x, training=False):
 
         for layer in self.layer_list:
-            try:
-                x = layer(x,training)
-            except:
-                x = layer(x)  
+            x = layer(x) 
+            # if isinstance(layer, tf.keras.layers.Flatten):
+            #     x = layer(x)
+            # else:
+            #     x = layer(x) 
+            # try:
+            #     x = layer(x,training)
+            # except:
+            #     x = layer(x) 
         return x

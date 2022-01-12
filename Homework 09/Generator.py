@@ -5,12 +5,12 @@ class Generator(tf.keras.Model): # <-- Needed to make parameters trainable and t
         super(Generator, self).__init__()
 
         self.layer_list = [
-            tf.keras.Input((100,1)),
+            #tf.keras.Input((100,1)),
 
             tf.keras.layers.Reshape((10,10,1)), 
 
             tf.keras.layers.Conv2DTranspose(64, kernel_size=(3,3), strides=2, padding='same', activation='relu'),
-            tf.keras.layers.Conv2DTranspose(32, kernel_size=(3,3), strides=2, padding='same', activation='relu'),
+            #tf.keras.layers.Conv2DTranspose(32, kernel_size=(3,3), strides=2, padding='same', activation='relu'),
 
             tf.keras.layers.Flatten(),
 
@@ -19,12 +19,17 @@ class Generator(tf.keras.Model): # <-- Needed to make parameters trainable and t
 
             tf.keras.layers.Conv2D(1, kernel_size=(3, 3), padding='same', activation='tanh')
         ]
-    
+    @tf.function
     def call(self, x, training=False):
 
         for layer in self.layer_list:
-            try:
-                x = layer(x,training)
-            except:
-                x = layer(x) 
+            x = layer(x) 
+            # if isinstance(layer, tf.keras.layers.Flatten) or isinstance(layer, tf.keras.layers.Reshape):
+            #     x = layer(x)
+            # else:
+            #     x = layer(x, training) 
+            # try:
+            #     x = layer(x,training)
+            # except:
+            #     x = layer(x) 
         return x
