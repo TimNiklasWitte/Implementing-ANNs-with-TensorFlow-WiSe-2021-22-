@@ -5,31 +5,31 @@ class Generator(tf.keras.Model): # <-- Needed to make parameters trainable and t
         super(Generator, self).__init__()
 
         self.layer_list = [
-            #tf.keras.Input((100,1)),
+            tf.keras.layers.Dense(units=7*7*256, activation='relu'),
+            tf.keras.layers.Reshape(target_shape=(7,7,256)),
 
-            tf.keras.layers.Reshape((10,10,1)), 
+            tf.keras.layers.Conv2DTranspose(filters=256, kernel_size=2, strides=2, padding='same', activation=None, kernel_initializer=tf.keras.initializers.glorot_uniform),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Activation(tf.nn.relu),
 
-            tf.keras.layers.Conv2DTranspose(64, kernel_size=(3,3), strides=2, padding='same', activation='relu'),
-            #tf.keras.layers.Conv2DTranspose(32, kernel_size=(3,3), strides=2, padding='same', activation='relu'),
+            tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, padding='same', activation=None, kernel_initializer=tf.keras.initializers.glorot_uniform),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Activation(tf.nn.relu),
 
-            tf.keras.layers.Flatten(),
+            tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=2, strides=2, padding='same', activation=None, kernel_initializer=tf.keras.initializers.glorot_uniform),
+            tf.keras.layers.BatchNormalization(),
+            tf.keras.layers.Activation(tf.nn.relu),
 
-            tf.keras.layers.Dense(28*28*1, activation='tanh'), # make reshape simpler
-            tf.keras.layers.Reshape((28,28,1)), 
-
-            tf.keras.layers.Conv2D(1, kernel_size=(3, 3), padding='same', activation='tanh')
+            tf.keras.layers.Conv2D(filters=1, kernel_size=3, strides=1, padding='same', activation='tanh', kernel_initializer=tf.keras.initializers.glorot_uniform)
         ]
+
     @tf.function
     def call(self, x, training=False):
 
         for layer in self.layer_list:
-            x = layer(x) 
-            # if isinstance(layer, tf.keras.layers.Flatten) or isinstance(layer, tf.keras.layers.Reshape):
-            #     x = layer(x)
-            # else:
-            #     x = layer(x, training) 
-            # try:
-            #     x = layer(x,training)
-            # except:
-            #     x = layer(x) 
+         
+            if isinstance(layer, tf.keras.layers.Dropout) or isinstance(layer, tf.keras.layers.BatchNormalization):
+                x = layer(x, training)
+            else:
+                x = layer(x) 
         return x
