@@ -10,9 +10,7 @@ import tqdm
 
 from GAN import *
 
-
 category = "candle"
-
 
 def main():
 
@@ -21,50 +19,48 @@ def main():
         url = f"https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap/{category}.npy"  
         urllib.request.urlretrieve(url, f"{category}.npy")
 
-    
-    dataset = tf.data.Dataset.from_generator(dataGenerator, (tf.uint8))
-    dataset = dataset.apply(prepare_data)
-    
-    train_size = 141000 # Total size: 141545
-    test_size = 350
-    train_dataset = dataset.take(train_size)
-
-    dataset.skip(train_size)
-    test_dataset = dataset.take(test_size)
-    
-    NUM_EPOCHS = 10
-    gan = GAN()
-    
-
-    # Testing once before we begin
-    test_loss_g, test_loss_d, test_accuracy_real, test_accuracy_fake  = gan.test(test_dataset)
-    tf.summary.scalar(name="Test loss generator", data=test_loss_g, step=0)
-    tf.summary.scalar(name="Test loss discriminator", data=test_loss_d, step=0)
-    tf.summary.scalar(name="Test accuracy real", data=test_accuracy_real, step=0)
-    tf.summary.scalar(name="Test accuracy fake", data=test_accuracy_fake, step=0)
-
-    # Check how model performs on train data once before we begin
-    train_loss_g, train_loss_d, _, _  = gan.test(train_dataset.take(200)) # approx 
-    tf.summary.scalar(name="Train loss generator", data=train_loss_g, step=0)
-    tf.summary.scalar(name="Train loss discriminator", data=train_loss_d, step=0)
-
-    # Plot
-    NUM_PLOTS_PER_ROW = 5
-    fig, axs = plt.subplots(nrows=NUM_EPOCHS + 1, ncols=NUM_PLOTS_PER_ROW, figsize=(14,14))
-
-
-    noise = tf.random.normal([32,100])
-    fake_images = gan.G(noise, training=False)
-    tf.summary.image(name="generated_images",data = fake_images, step=0, max_outputs=32)
-
-    fake_images = fake_images[:NUM_PLOTS_PER_ROW]
-    for idx, img in enumerate(fake_images):
-        axs[0, idx].imshow(img, cmap='gray')
-
-    # We train for num_epochs epochs.
     file_path = "test_logs/test"
     summary_writer = tf.summary.create_file_writer(file_path)
     with summary_writer.as_default():
+
+        dataset = tf.data.Dataset.from_generator(dataGenerator, (tf.uint8))
+        dataset = dataset.apply(prepare_data)
+        
+        train_size = 141000 # Total size: 141545
+        test_size = 350
+        train_dataset = dataset.take(train_size)
+
+        dataset.skip(train_size)
+        test_dataset = dataset.take(test_size)
+        
+        NUM_EPOCHS = 10
+        gan = GAN()
+        
+        # Testing once before we begin
+        test_loss_g, test_loss_d, test_accuracy_real, test_accuracy_fake  = gan.test(test_dataset)
+        tf.summary.scalar(name="Test loss generator", data=test_loss_g, step=0)
+        tf.summary.scalar(name="Test loss discriminator", data=test_loss_d, step=0)
+        tf.summary.scalar(name="Test accuracy real", data=test_accuracy_real, step=0)
+        tf.summary.scalar(name="Test accuracy fake", data=test_accuracy_fake, step=0)
+
+        # Check how model performs on train data once before we begin
+        train_loss_g, train_loss_d, _, _  = gan.test(train_dataset.take(200)) # approx 
+        tf.summary.scalar(name="Train loss generator", data=train_loss_g, step=0)
+        tf.summary.scalar(name="Train loss discriminator", data=train_loss_d, step=0)
+
+        # Plot
+        NUM_PLOTS_PER_ROW = 5
+        fig, axs = plt.subplots(nrows=NUM_EPOCHS + 1, ncols=NUM_PLOTS_PER_ROW, figsize=(14,14))
+
+        noise = tf.random.normal([32,100])
+        fake_images = gan.G(noise, training=False)
+        tf.summary.image(name="generated_images",data = fake_images, step=0, max_outputs=32)
+
+        fake_images = fake_images[:NUM_PLOTS_PER_ROW]
+        for idx, img in enumerate(fake_images):
+            axs[0, idx].imshow(img, cmap='gray')
+
+        # We train for num_epochs epochs.
         for epoch in range(NUM_EPOCHS):
             print(f"Epoch: {epoch}")
 
