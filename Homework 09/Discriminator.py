@@ -16,7 +16,7 @@ class Discriminator(tf.keras.Model): # <-- Needed to make parameters trainable a
             tf.keras.layers.Dropout(0.3),
 
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(1, activation='tanh'),
+            tf.keras.layers.Dense(1, activation='sigmoid'),
      
         ]
 

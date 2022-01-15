@@ -3,7 +3,7 @@ import os
 import urllib.request
 import numpy as np
 import matplotlib.pyplot as plt
-
+from matplotlib.gridspec import SubplotSpec # row title
 
 import tensorflow as tf
 import tqdm
@@ -48,9 +48,18 @@ def main():
     tf.summary.scalar(name="Train loss generator", data=train_loss_g, step=0)
     tf.summary.scalar(name="Train loss discriminator", data=train_loss_d, step=0)
 
+    # Plot
+    NUM_PLOTS_PER_ROW = 5
+    fig, axs = plt.subplots(nrows=NUM_EPOCHS + 1, ncols=NUM_PLOTS_PER_ROW, figsize=(14,14))
+
+
     noise = tf.random.normal([32,100])
     fake_images = gan.G(noise, training=False)
     tf.summary.image(name="generated_images",data = fake_images, step=0, max_outputs=32)
+
+    fake_images = fake_images[:NUM_PLOTS_PER_ROW]
+    for idx, img in enumerate(fake_images):
+        axs[0, idx].imshow(img, cmap='gray')
 
     # We train for num_epochs epochs.
     file_path = "test_logs/test"
@@ -90,6 +99,24 @@ def main():
             fake_images = gan.G(noise, training=False)
             tf.summary.image(name="generated_images",data = fake_images, step=epoch + 1, max_outputs=32)
 
+            fake_images = fake_images[:NUM_PLOTS_PER_ROW]
+            for idx, img in enumerate(fake_images):
+                axs[epoch + 1, idx].imshow(img, cmap='gray')
+                
+
+    # Plot result in subplot
+    grid = plt.GridSpec(NUM_EPOCHS + 1, NUM_PLOTS_PER_ROW)
+    for epoch in range(NUM_EPOCHS + 1):
+        create_row_title(fig, grid[epoch, ::],f"Epoch: {epoch}")
+
+    # Remove axis labels
+    for ax in axs.flat:
+        ax.set_axis_off()
+    
+    plt.suptitle("Generated candles by applying a GAN", fontsize=22)
+    plt.tight_layout()
+    plt.savefig("GeneratedCandles.png", dpi=200)
+  
 
 def prepare_data(data):
 
@@ -118,6 +145,14 @@ def dataGenerator():
     images = np.load(f"{category}.npy")
     for image in images:
         yield image
+
+def create_row_title(fig: plt.Figure, grid: SubplotSpec, title: str):
+    row = fig.add_subplot(grid)
+    # the '\n' is important
+    row.set_title(f'{title}\n', fontweight='bold')
+    # hide subplot
+    row.set_frame_on(False)
+    row.axis('off')
 
 if __name__ == "__main__":
     try:
