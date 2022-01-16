@@ -18,7 +18,7 @@ class WGAN(tf.keras.Model): # <-- Needed to make parameters trainable and to be 
 
         self.batch_size = 256
         self.noise_dim = 100
-        self.cross_entropy = tf.keras.losses.BinaryCrossentropy()
+ 
 
     @tf.function
     def train_step(self, real_images):
@@ -69,7 +69,8 @@ class WGAN(tf.keras.Model): # <-- Needed to make parameters trainable and to be 
         test_loss_g = np.mean(test_loss_aggregator_g)
         test_loss_c = np.mean(test_loss_aggregator_c)
 
-        return test_loss_g, test_loss_c 
+        # there is no classification between real and fake (no threshold, only linear value) -> no accurary
+        return test_loss_g, test_loss_c  
 
 
     def critic_loss(self, real_output, fake_output):

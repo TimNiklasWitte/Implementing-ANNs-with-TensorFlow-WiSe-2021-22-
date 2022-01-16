@@ -22,7 +22,7 @@ class Generator(tf.keras.Model): # <-- Needed to make parameters trainable and t
             tf.keras.layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')
         ]
 
-    #@tf.function
+    @tf.function
     def call(self, x, training=False):
 
         for layer in self.layer_list: 
