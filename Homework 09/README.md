@@ -9,7 +9,7 @@ A GAN and a WGAN are implemented for generated drawn candle images based on the 
 
 Run the `Training.py`. Before starting the training, the training data (including testing data) will be downloaded 
 and stored/saved in the `candle.npy` file (~100MB).
-After training, a `GeneratedCandles.png` file will be created displaying 5 generated candle images per epoch.
+After training, a `GeneratedCandles.png` file will be created displaying five generated candle images per epoch.
 
 ```bash
 python Training.py
@@ -29,13 +29,13 @@ tensorboard --logdir ./test_logs/
 
 ### GAN
 
-![alt text](./WGAN/GeneratedCandles.png)
+![alt text](./GAN/GeneratedCandles.png)
 
 ### WGAN
 
-![alt text](./GAN/GeneratedCandles.png)
+![alt text](./WGAN/GeneratedCandles.png)
 
 ## Tricks and take home messages
 - The generator must be strong than the discriminator (critic).
-- Sometimes train generator more than discriminator (critic).
+- Sometimes train generator more than discriminator (critic) -> skip training discriminator (critic) (in this case)
 - No bias for generator
