@@ -17,7 +17,7 @@ python Training.py
 
 ### See training live results
 
-Run `tensorboard` to inspect the current loss of the generator and discriminator (WGAN: critic) in the epoch including previous onces.
+Run `tensorboard` to inspect the loss of the generator and discriminator (WGAN: critic) in the current and previous epochs.
 Furthermore, you can see the images created by the generator per epoch.
 In case of the GAN, you can see the discriminator accuracy detecting fake and real images per epoch.
 
