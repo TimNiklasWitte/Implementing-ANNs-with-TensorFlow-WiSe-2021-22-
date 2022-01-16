@@ -15,7 +15,7 @@ After training, a `GeneratedCandles.png` file will be created displaying five ge
 python Training.py
 ```
 
-### See live results of training
+### See training live results
 
 Run `tensorboard` to inspect the current loss of the generator and discriminator (WGAN: critic) in the epoch including previous onces.
 Furthermore, you can see the images created by the generator per epoch.
@@ -37,5 +37,5 @@ tensorboard --logdir ./test_logs/
 
 ## Tricks and take home messages
 - The generator must be "strong" i.e. containing more layers than the discriminator (critic).
-- Sometimes train the generator "more" than the discriminator (critic) -> skip training discriminator (critic) (in this case)
+- Sometimes train the generator "more" than the discriminator (critic) -> skip training discriminator (critic) (in this case).
 - No bias for the generator
