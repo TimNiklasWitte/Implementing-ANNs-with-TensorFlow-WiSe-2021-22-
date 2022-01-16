@@ -38,4 +38,4 @@ tensorboard --logdir ./test_logs/
 ## Tricks and take home messages
 - The generator must be "strong" i.e. containing more layers than the discriminator (critic).
 - Sometimes train the generator "more" than the discriminator (critic) -> skip training discriminator (critic) (in this case).
-- No bias for the generator
+- No bias for the generator.
