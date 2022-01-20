@@ -7,17 +7,18 @@ import numpy as np
 import tqdm
 from SkipGram import *
 
+from numpy import dot
+from numpy.linalg import norm
 
-contextWindowSize = 4
-numSentences = 1000
+contextWindowSize = 6
+numSentences = 10000
 
 
 def main():
     global vocabulary_size
-    sentencesData = loadSentencesData()
+    sentencesData, word_dict = loadSentencesData()
     vocabulary_size = countWords(sentencesData)
     
-
     embedding_size = 64
     NUM_EPOCHS = 10
 
@@ -26,8 +27,8 @@ def main():
     dataset = tf.data.Dataset.from_generator(dataGenerator, (tf.int32, tf.int32))
     dataset = dataset.apply(prepare_data)
 
-    train_size = 10
-    test_size = 10
+    train_size = 10000
+    test_size = 1000
     train_dataset = dataset.take(train_size)
 
     dataset.skip(train_size)
@@ -36,6 +37,14 @@ def main():
     file_path = "test_logs/test"
     summary_writer = tf.summary.create_file_writer(file_path)
     with summary_writer.as_default():
+        
+        train_loss = skipGram.test(train_dataset)
+        tf.summary.scalar(name="Train loss", data=train_loss, step=0)
+
+        test_loss = skipGram.test(test_dataset)
+        tf.summary.scalar(name="Test loss", data=test_loss, step=0)
+
+
         for epoch in range(NUM_EPOCHS):
             print(f"Epoch: {epoch}")
 
@@ -49,9 +58,62 @@ def main():
                 epoch_loss_agg.append(loss)
             
             train_loss = np.mean(epoch_loss_agg)
-           
-            tf.summary.scalar(name="Train loss", data=train_loss, step=epoch)
-         
+            tf.summary.scalar(name="Train loss", data=train_loss, step=epoch + 1)
+
+            test_loss = skipGram.test(test_dataset)
+            tf.summary.scalar(name="Test loss", data=test_loss, step=epoch + 1)
+
+
+            words = ["holy", "father", "wine"]
+            for word1 in words:
+                
+                word1_id = word_dict[word1]
+                
+                similar_word = ""
+                x = -1
+
+                for word2, word2_id in word_dict.items():
+
+                    if word1_id != word2_id:
+                        a = skipGram.embedding(word1_id).numpy()
+                        b = skipGram.embedding(word2_id).numpy()
+
+                        sim = cos_sim(a,b)
+
+                        if x < sim:
+                            x = sim 
+                            similar_word = word2 
+                
+                print(f"{word1} {similar_word}")
+
+            # for word1, word1_id in word_dict.items():
+            #     for word2, word2_id in word_dict.items():
+
+            #         if word1_id != word2_id:
+
+            #             a = skipGram.embedding(word1_id).numpy()
+            #             b = skipGram.embedding(word2_id).numpy()
+
+            #             cos_sim(a,b)
+            #             print(word1 + " " + word2)
+
+    # id1 = word_dict["father"]
+    # id2 = word_dict["holy"]
+
+    # a = skipGram.embedding(id1).numpy()
+    # b = skipGram.embedding(id2).numpy()
+
+    # t = cos_sim(a,b)
+    # print(t)
+    
+    # m = tf.keras.metrics.CosineSimilarity()
+    # a = skipGram.embedding(id1)
+    # b = skipGram.embedding(id2)
+    # m.update_state(a,b)
+    # print(m.result().numpy())
+
+def cos_sim(a,b):
+    return dot(a, b)/(norm(a)*norm(b))
 
 def loadSentencesData():
     global contextWindowSize
@@ -96,7 +158,7 @@ def loadSentencesData():
         sentences[idx] = mappedWords
     
 
-    return sentences # = number of words
+    return sentences, word_dict 
 
 def countWords(sentences):
     global contextWindowSize
@@ -137,7 +199,7 @@ def dataGenerator():
     global contextWindowSize
 
 
-    sentencesData = loadSentencesData()
+    sentencesData, _ = loadSentencesData()
  
     #print(vocabulary_size)
     for encodedSentence in sentencesData:
