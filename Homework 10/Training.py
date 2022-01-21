@@ -64,8 +64,8 @@ def main():
             tf.summary.scalar(name="Test loss", data=test_loss, step=epoch + 1)
 
 
-            words = ["holy", "father", "wine"]
-            K = 5
+            words = np.array(["holy", "father", "wine"])
+            K = 10
             for word1 in words:
                 
                 word1_id = word_dict[word1]
@@ -74,7 +74,7 @@ def main():
                 sims_cosine = [-1] * K
 
                 similar_words_distance = [""] * K
-                sims_distance = [999999] * K
+                sims_distance = [99999999] * K
 
                 for word2, word2_id in word_dict.items():
 
@@ -87,26 +87,40 @@ def main():
 
                         if sim > np.min(sims_cosine):
                             sims_cosine[np.argmin(sims_cosine)] = sim 
+                      
                             similar_words_cosine[np.argmin(sims_cosine)] = word2 
 
                         if dist < np.max(sims_distance):
                             sims_distance[np.argmax(sims_distance)] = dist 
                             similar_words_distance[np.argmax(sims_distance)] = word2 
-                
 
-                # log cos sim
-                log = ""
-                for idx, simWord in enumerate(similar_words_cosine):
-                    log = log + f"{simWord} - {sims_cosine[idx]}  \n" # markdown
-                log = log[:-1] # remove last line break
-                tf.summary.text(name=f"cos_sim: {word1}", data = log, step=epoch)
+                # round does not work
+                sims_cosine = np.round(sims_cosine, 3)
+                sims_distance = np.round(sims_distance, 3)
 
-                # log distance sim
+                # sort
+                similar_words_cosine = np.array(similar_words_cosine)
+                similar_words_distance = np.array(similar_words_distance)
+
+                idxs = np.argsort(sims_cosine)[::-1] # reverse order
+                sims_cosine = np.sort(sims_cosine)[::-1] # reverse order
+                similar_words_cosine = similar_words_cosine[idxs]
+
+                idxs = np.argsort(sims_distance)
+                sims_distance = np.sort(sims_distance)
+                similar_words_distance = similar_words_distance[idxs]
+
+
+                log_header =  "| Word (1) | cos sim (1) | Word (2) | distance (2) |\n"
+                log_header += "|----------|-------------|----------|----------|\n"
+
                 log = ""
-                for idx, simWord in enumerate(similar_words_distance):
-                    log = log + f"{simWord} - {sims_distance[idx]}  \n" # markdown
-                log = log[:-1] # remove last line break
-                tf.summary.text(name=f"distance_sim: {word1}", data = log, step=epoch)
+                for idx in range(len(similar_words_cosine)):
+                    log += f"| {similar_words_cosine[idx]} | {sims_cosine[idx]} | {similar_words_distance[idx]} | {sims_distance[idx]} |\n"
+                    
+                log = log_header + log 
+                tf.summary.text(name=f"{word1}", data = log, step=epoch)
+         
 
 
 
