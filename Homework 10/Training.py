@@ -10,8 +10,8 @@ from SkipGram import *
 from numpy import dot
 from numpy.linalg import norm
 
-contextWindowSize = 6
-numSentences = 10000
+contextWindowSize = 2
+numSentences = 50000
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
     dataset = tf.data.Dataset.from_generator(dataGenerator, (tf.int32, tf.int32))
     dataset = dataset.apply(prepare_data)
 
-    train_size = 10000
+    train_size = 50000
     test_size = 1000
     train_dataset = dataset.take(train_size)
 
@@ -65,12 +65,16 @@ def main():
 
 
             words = ["holy", "father", "wine"]
+            K = 5
             for word1 in words:
                 
                 word1_id = word_dict[word1]
                 
-                similar_word = ""
-                x = -1
+                similar_words_cosine = [""] * K
+                sims_cosine = [-1] * K
+
+                similar_words_distance = [""] * K
+                sims_distance = [999999] * K
 
                 for word2, word2_id in word_dict.items():
 
@@ -79,38 +83,33 @@ def main():
                         b = skipGram.embedding(word2_id).numpy()
 
                         sim = cos_sim(a,b)
+                        dist = norm(a-b)
 
-                        if x < sim:
-                            x = sim 
-                            similar_word = word2 
+                        if sim > np.min(sims_cosine):
+                            sims_cosine[np.argmin(sims_cosine)] = sim 
+                            similar_words_cosine[np.argmin(sims_cosine)] = word2 
+
+                        if dist < np.max(sims_distance):
+                            sims_distance[np.argmax(sims_distance)] = dist 
+                            similar_words_distance[np.argmax(sims_distance)] = word2 
                 
-                print(f"{word1} {similar_word}")
 
-            # for word1, word1_id in word_dict.items():
-            #     for word2, word2_id in word_dict.items():
+                # log cos sim
+                log = ""
+                for idx, simWord in enumerate(similar_words_cosine):
+                    log = log + f"{simWord} - {sims_cosine[idx]}  \n" # markdown
+                log = log[:-1] # remove last line break
+                tf.summary.text(name=f"cos_sim: {word1}", data = log, step=epoch)
 
-            #         if word1_id != word2_id:
+                # log distance sim
+                log = ""
+                for idx, simWord in enumerate(similar_words_distance):
+                    log = log + f"{simWord} - {sims_distance[idx]}  \n" # markdown
+                log = log[:-1] # remove last line break
+                tf.summary.text(name=f"distance_sim: {word1}", data = log, step=epoch)
 
-            #             a = skipGram.embedding(word1_id).numpy()
-            #             b = skipGram.embedding(word2_id).numpy()
 
-            #             cos_sim(a,b)
-            #             print(word1 + " " + word2)
 
-    # id1 = word_dict["father"]
-    # id2 = word_dict["holy"]
-
-    # a = skipGram.embedding(id1).numpy()
-    # b = skipGram.embedding(id2).numpy()
-
-    # t = cos_sim(a,b)
-    # print(t)
-    
-    # m = tf.keras.metrics.CosineSimilarity()
-    # a = skipGram.embedding(id1)
-    # b = skipGram.embedding(id2)
-    # m.update_state(a,b)
-    # print(m.result().numpy())
 
 def cos_sim(a,b):
     return dot(a, b)/(norm(a)*norm(b))

@@ -23,7 +23,7 @@ class SkipGram(tf.keras.layers.Layer):
             shape=(self.vocabulary_size, self.embedding_size), initializer="random_normal", trainable=True
         )
         self.b_score = self.add_weight(
-            shape=(self.embedding_size, 1), initializer="random_normal", trainable=True
+            shape=(self.vocabulary_size, 1), initializer="random_normal", trainable=True
         )
 
     @tf.function
