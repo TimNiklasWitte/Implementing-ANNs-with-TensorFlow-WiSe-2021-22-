@@ -11,7 +11,7 @@ from numpy import dot
 from numpy.linalg import norm
 
 contextWindowSize = 2
-numSentences = 50000
+numSentences = 70000
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
     dataset = tf.data.Dataset.from_generator(dataGenerator, (tf.int32, tf.int32))
     dataset = dataset.apply(prepare_data)
 
-    train_size = 50000
+    train_size = 100000
     test_size = 1000
     train_dataset = dataset.take(train_size)
 
