@@ -239,10 +239,8 @@ def dataGenerator():
 
 
 def prepare_data(data):
-    global vocabulary_size
-    
-    #create one-hot inputs and targets
-    #data = data.map(lambda input, target: (tf.one_hot(input, depth=vocabulary_size), tf.one_hot(target, depth=vocabulary_size)))
+
+    AUTOTUNE = tf.data.AUTOTUNE
 
     #cache this progress in memory, as there is no need to redo it; it is deterministic after all
     data = data.cache()
@@ -250,7 +248,7 @@ def prepare_data(data):
     #shuffle, batch, prefetch
     data = data.shuffle(200) # shuffling random generated data ;)
     data = data.batch(32)
-    data = data.prefetch(20)
+    data = data.prefetch(AUTOTUNE)
     #return preprocessed dataset
     return data
 

@@ -27,19 +27,34 @@ class SkipGram(tf.keras.layers.Layer):
         )
 
     @tf.function
-    def call(self, x, target):
+    def call(self, x, target, positive=True):
    
         embedd = self.embedding(x)
-   
-        return tf.nn.nce_loss(
-            weights=self.w_score,               # [vocab_size, embed_size]
-            biases=tf.squeeze(self.b_score),    # [vocab_size]
-            labels=target,                      # [bs, 1] <=> [bs, vocab_size]
-            inputs=embedd,                      # [bs, embed_size]
-            num_sampled=32,                     # negative sampling: number 
-            num_classes=self.vocabulary_size
-        )
-         
+
+        if positive:
+
+            return tf.nn.nce_loss(
+                weights=self.w_score,               # [vocab_size, embed_size]
+                biases=tf.squeeze(self.b_score),    # [vocab_size]
+                labels=target,                      # [bs, 1] <=> [bs, vocab_size]
+                inputs=embedd,                      # [bs, embed_size]
+                num_sampled=32,                     # negative sampling: number 
+                num_classes=self.vocabulary_size,
+                num_true=1                          # positive sample
+            )
+
+        # negative
+        else:
+            return tf.nn.nce_loss(
+                weights=self.w_score,               # [vocab_size, embed_size]
+                biases=tf.squeeze(self.b_score),    # [vocab_size]
+                labels=target,                      # [bs, 1] <=> [bs, vocab_size]
+                inputs=embedd,                      # [bs, embed_size]
+                num_sampled=32,                     # negative sampling: number 
+                num_classes=self.vocabulary_size,
+                num_true=0                          # negative example
+            )
+
     @tf.function
     def train_step(self, input, target):
         # loss_object and optimizer_object are instances of respective tensorflow classes
