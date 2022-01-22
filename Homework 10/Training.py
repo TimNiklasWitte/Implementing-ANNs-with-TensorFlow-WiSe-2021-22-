@@ -16,8 +16,8 @@ numSentences = 50000
 
 def main():
     global vocabulary_size
-    sentencesData, word_dict = loadSentencesData()
-    vocabulary_size = countWords(sentencesData)
+    sentencesData, word_dict, _ = loadSentencesData()
+    vocabulary_size, _ = countWords(sentencesData)
     
     embedding_size = 64
     NUM_EPOCHS = 10
@@ -50,20 +50,22 @@ def main():
 
             epoch_loss_agg = []
 
-            for input, target in tqdm.tqdm(train_dataset,position=0, leave=True, total=train_size/32):
+            for input, target in tqdm.tqdm(train_dataset,position=0, leave=True):
        
                 target = tf.expand_dims(target, -1)
                 loss = skipGram.train_step(input, target)
      
-                epoch_loss_agg.append(loss)
+                epoch_loss_agg.append(np.mean(loss, axis=0))
             
-            train_loss = np.mean(epoch_loss_agg)
+            train_loss = np.mean(epoch_loss_agg, axis=0)
             tf.summary.scalar(name="Train loss", data=train_loss, step=epoch + 1)
 
             test_loss = skipGram.test(test_dataset)
             tf.summary.scalar(name="Test loss", data=test_loss, step=epoch + 1)
 
-
+            #########################
+            # K nearest neighbord words
+            #########################
             words = np.array(["holy", "father", "wine"])
             K = 10
             for word1 in words:
@@ -147,19 +149,21 @@ def loadSentencesData():
 
     sentences = sentences[:numSentences]
 
+
     # map: word->number
     word_dict = {}
     wordId = 0
+    numWord = 0
     for sentence in sentences:
         words = sentence.split(" ")
         for word in words:
+            numWord += 1
             try:
                 word_dict[word] = word_dict[word] 
             except:
                 word_dict[word] = wordId
                 wordId += 1
-       
-   
+    
 
     for idx, sentence in enumerate(sentences):
         words = sentence.split(" ")
@@ -171,7 +175,7 @@ def loadSentencesData():
         sentences[idx] = mappedWords
     
 
-    return sentences, word_dict 
+    return sentences, word_dict, numWord
 
 def countWords(sentences):
     global contextWindowSize
@@ -179,7 +183,6 @@ def countWords(sentences):
     word_dic = {}   
     for sentence in sentences:
 
- 
         for idx in range(2*contextWindowSize + 1):
             word = sentence[idx]
             try:
@@ -187,7 +190,7 @@ def countWords(sentences):
             except KeyError:
                 word_dic[word] = 1
 
-    return len(word_dic)
+    return len(word_dic), word_dic
 
 def removeSpecialCharacters(string):
     result = ""
@@ -211,10 +214,13 @@ def removeSpecialCharacters(string):
 def dataGenerator():
     global contextWindowSize
 
+    s = 0.001
 
-    sentencesData, _ = loadSentencesData()
- 
-    #print(vocabulary_size)
+    sentencesData, _, numWords = loadSentencesData()
+
+    _, word_occurence_dict = countWords(sentencesData)
+
+
     for encodedSentence in sentencesData:
     
         for idx in range(2*contextWindowSize + 1):
@@ -222,7 +228,14 @@ def dataGenerator():
             target = encodedSentence[idx]
     
             if idx != contextWindowSize:
-                yield (input_word, target) 
+                
+                # subsampling
+                z_w = word_occurence_dict[input_word] / numWords
+                p_keep = ( np.sqrt(z_w/s) + 1 ) * (s/z_w)
+                rand_var = np.random.uniform() # [0, 1)
+              
+                if p_keep < rand_var:
+                    yield (input_word, target) 
 
 
 def prepare_data(data):

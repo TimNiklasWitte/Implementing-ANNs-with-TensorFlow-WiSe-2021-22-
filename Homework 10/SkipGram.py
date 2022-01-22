@@ -56,6 +56,6 @@ class SkipGram(tf.keras.layers.Layer):
         for input, target in test_dataset:
             target = tf.expand_dims(target, -1)
             loss = self(input, target)
-            loss_agg.append(loss)
-            
-        return np.mean(loss_agg)
+            loss_agg.append(np.mean(loss, axis=0))
+
+        return np.mean(loss_agg, axis=0)
