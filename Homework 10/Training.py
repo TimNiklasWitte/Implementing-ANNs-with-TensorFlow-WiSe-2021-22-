@@ -234,7 +234,7 @@ def dataGenerator():
                 p_keep = ( np.sqrt(z_w/s) + 1 ) * (s/z_w)
                 rand_var = np.random.uniform() # [0, 1)
               
-                if p_keep < rand_var:
+                if p_keep > rand_var:
                     yield (input_word, target) 
 
 
