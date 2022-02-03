@@ -15,7 +15,12 @@ class EmbeddTokenAndPosLayer(tf.keras.layers.Layer):
     #@tf.function
     def call(self, x):
         token_embedd = self.embedding_token(x)
-        pos_embedd = self.embedding_pos(tf.range(self.max_input_seq_len))
+        
+        tmp = tf.range(self.max_input_seq_len - 1)
+        tmp = tf.expand_dims(tmp, axis=0)
+        pos_embedd = self.embedding_pos(tmp)
 
+        # print(token_embedd.shape)
+        # print(pos_embedd.shape)
         return token_embedd + pos_embedd
     
