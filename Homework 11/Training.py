@@ -9,7 +9,7 @@ from TokenPredictor import *
 
 def main():
     
-    vocab_size = 2000
+    vocab_size = 6000
     embedding_size = 64
     max_seq_len = 15
 
@@ -41,7 +41,7 @@ def main():
 
     log(train_summary_writer, tokenPredictor, ids_dataset, 0)
 
-    NUM_EPOCHS = 100
+    NUM_EPOCHS = 600
     for epoch in range(NUM_EPOCHS):
         
         print(f"Epoch {epoch}:")
@@ -53,6 +53,10 @@ def main():
         print([f"{key}: {value}" for (key, value) in zip(list(metrics.keys()), list(metrics.values()))])
 
         log(train_summary_writer, tokenPredictor, ids_dataset, epoch + 1)
+
+        # Save weights
+        if epoch % 100 == 0:
+            tokenPredictor.save_weights(f"./saved_models/trainied_weights_epoch_{epoch}", save_format="tf")
 
 
 
