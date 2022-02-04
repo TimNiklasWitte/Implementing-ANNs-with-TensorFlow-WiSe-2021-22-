@@ -15,7 +15,6 @@ class TransformerBlock(tf.keras.layers.Layer):
 
         self.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
 
-    #@tf.function
     def call(self, x):
         out1 = self.multi_head_attention(x, x)
         out1 = self.dropout1(out1)

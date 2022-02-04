@@ -4,9 +4,9 @@ import tensorflow as tf
 from EmbeddTokenAndPosLayer import *
 from TransformerBlock import *
 
-class MyModel(tf.keras.Model):
+class TokenPredictor(tf.keras.Model):
     def __init__(self, tokenizer, vocabulary_size, embedding_size, max_input_seq_len):
-        super(MyModel, self).__init__()
+        super(TokenPredictor, self).__init__()
         
         self.tokenizer = tokenizer
         self.vocabulary_size = vocabulary_size
@@ -30,7 +30,7 @@ class MyModel(tf.keras.Model):
             tf.keras.layers.Dense(vocabulary_size, activation=None)
         ]
 
-    #@tf.function
+    @tf.function # äußere
     def call(self, x, training=False):
         for layer in self.layer_list:
             try:
@@ -44,7 +44,7 @@ class MyModel(tf.keras.Model):
         for metric in self.metrics:
             metric.reset_states()
     
-    #@tf.function
+    @tf.function
     def train_step(self, input_seq, target_token):
         
         with tf.GradientTape() as tape:
@@ -65,10 +65,10 @@ class MyModel(tf.keras.Model):
         # Return a dictionary mapping metric names to current value
         return {m.name: m.result() for m in self.metrics}
 
-    def gen_text(self, input, k_top):
+    def predict(self, input, k_top):
         ids = self.tokenizer.tokenize(input)
         
-        num_toPredict = self.max_input_seq_len - ids.shape[0]
+        num_toPredict = self.max_input_seq_len - ids.shape[0] + 1
         if num_toPredict <= 0:
             print("Error: Text to long")
             return input
@@ -76,7 +76,7 @@ class MyModel(tf.keras.Model):
         for i in range(num_toPredict):
 
             # add padding
-            padding_len = self.max_input_seq_len - ids.shape[0]
+            padding_len = self.max_input_seq_len - ids.shape[0] + 1
             padding_token_id = self.tokenizer.string_to_id("")
             padding = tf.zeros(shape=padding_len, dtype=tf.int32) + padding_token_id 
 

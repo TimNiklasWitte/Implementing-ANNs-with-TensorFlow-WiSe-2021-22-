@@ -5,46 +5,20 @@ import tqdm
 
 import sentencepiece as sp
 
-from MyModel import *
+from TokenPredictor import *
 
 def main():
-    # d_model = 4
-    # pos_in_dim = np.arange(4)
-    # pos_in_dim = np.expand_dims(pos_in_dim, -1)
-    # pos_in_dim = np.repeat(pos_in_dim, 4, axis=1)
     
-    # pos_in_seq = np.transpose(pos_in_dim)
-    # print(pos_in_dim)
-    # print(pos_in_seq)
-
-    # x = tf.cast(1000, tf.float32)
-    # y = tf.cast((2 * (pos_in_dim//2) / d_model), tf.float32) 
- 
-    # angle_rates = tf.cast(pos_in_seq, tf.float32) *  tf.math.pow(x, y) #tf.math.pow(1000, (2*pos_in_dim) / d_model)
-    # print(angle_rates)
-    # print(tf.sin(angle_rates[:, 0::2]))
-    # print(angle_rates[:, 0::2])
-    
-    # angle_rates[:, 0::2] = tf.sin(angle_rates[:, 0::2])
-
-    #
-
-    # #= np.sin(angle_rates[:, 0::2])
-    # #angle_rates[:, 1:2] #= tf.cos(angle_rates[:, 0:2])
-    # exit()
-    # l = EmbeddTokenAndPosLayer(10, 5, 5)
-
-    # x = tf.constant([[7, 6, 0, 0, 1]])
-    # print(l(x))
-
-    # exit()
+    vocab_size = 2000
+    embedding_size = 64
+    max_seq_len = 15
 
     # Logging
     file_path = "test_logs/test" 
     train_summary_writer = tf.summary.create_file_writer(file_path)
 
     path = tf.keras.utils.get_file("nietzsche.txt", origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
-    sp.SentencePieceTrainer.train(input=path, model_prefix='tokenizer_model', model_type="unigram", vocab_size=2000)
+    sp.SentencePieceTrainer.train(input=path, model_prefix='tokenizer_model', model_type="unigram", vocab_size=vocab_size)
 
     # deserialize the trained model file to load it in the correct format
     trained_tokenizer_model = tf.io.gfile.GFile('tokenizer_model.model', "rb").read()
@@ -59,32 +33,26 @@ def main():
     all_ids = tokenizer.tokenize(text)
 
     
-    all_ids = tf_txt.sliding_window(data=all_ids, width=15) #error?
+    all_ids = tf_txt.sliding_window(data=all_ids, width=max_seq_len + 1) # "+ 1" = do not forget the target token ;)
     ids_dataset = tf.data.Dataset.from_tensor_slices(all_ids)
     ids_dataset = ids_dataset.apply(prepare_dataset)
 
-    train_size = 2000
-    test_size = 100
-    train_dataset = ids_dataset.take(train_size)
-    ids_dataset.skip(train_size)
-    test_dataset = ids_dataset.take(test_size)
+    tokenPredictor = TokenPredictor(tokenizer, vocab_size, embedding_size, max_seq_len)
 
-    model = MyModel(tokenizer, 2000, 64, 15)
-
-    log(train_summary_writer, model, train_dataset, test_dataset, 0)
+    log(train_summary_writer, tokenPredictor, ids_dataset, 0)
 
     NUM_EPOCHS = 100
     for epoch in range(NUM_EPOCHS):
         
         print(f"Epoch {epoch}:")
 
-        for input_seq, target_token in tqdm.tqdm(train_dataset,position=0, leave=True):
-            metrics = model.train_step(input_seq, target_token)
+        for input_seq, target_token in tqdm.tqdm(ids_dataset,position=0, leave=True):
+            metrics = tokenPredictor.train_step(input_seq, target_token)
 
         # print the metrics
         print([f"{key}: {value}" for (key, value) in zip(list(metrics.keys()), list(metrics.values()))])
 
-        log(train_summary_writer, model, train_dataset, test_dataset, epoch + 1)
+        log(train_summary_writer, tokenPredictor, ids_dataset, epoch + 1)
 
 
 
@@ -105,36 +73,28 @@ def split_input_target(sequence):
     target_text = sequence[-1]
     return input_text, target_text
 
-def log(train_summary_writer, model, train_dataset, test_dataset, epoch):
+def log(train_summary_writer, tokenPredictor, dataset, epoch):
 
     with train_summary_writer.as_default():
         
         # Log metrics
         if epoch == 0:
-            for data in train_dataset.take(1000): # approx full train dataset
-                metrics = model.test_step(data)
+            for data in dataset.take(1000): # approx full train dataset
+                metrics = tokenPredictor.test_step(data)
 
-        for metric in model.metrics:
+        for metric in tokenPredictor.metrics:
             tf.summary.scalar(f"{metric.name}_train", metric.result(), step=epoch)
 
-        model.reset_metrics()
-
-        for data in test_dataset:
-            metrics = model.test_step(data)
-            
-        for metric in model.metrics:
-            tf.summary.scalar(f"{metric.name}_test", metric.result(), step=epoch)
-
-        model.reset_metrics()
+        tokenPredictor.reset_metrics()
 
         # Log texts
-        txt = model.gen_text("He is ", k_top=5)
+        txt = tokenPredictor.predict("He is ", k_top=5)
         tf.summary.text(f"He is ", txt, step=epoch)
 
-        txt = model.gen_text("There is ", k_top=5)
-        tf.summary.text(f"There is", txt, step=epoch)
+        txt = tokenPredictor.predict("There is ", k_top=5)
+        tf.summary.text(f"There is ", txt, step=epoch)
 
-        txt = model.gen_text("Human ", k_top=5)
+        txt = tokenPredictor.predict("Human ", k_top=5)
         tf.summary.text(f"Human ", txt, step=epoch)
         
 
